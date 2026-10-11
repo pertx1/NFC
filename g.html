@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>House guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  body{background:var(--bg)}
+  .head{background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;padding:28px 18px 46px}
+  .head small{opacity:.85}.head h1{margin:2px 0 8px;font-size:26px;line-height:1.15}
+  .head p{margin:0;opacity:.95;max-width:46ch}
+  .langs{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
+  .langs button{border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff;border-radius:99px;padding:4px 10px;font:600 12px inherit;font-family:inherit;cursor:pointer}
+  .langs button.on{background:#fff;color:var(--brand)}
+  main{max-width:560px;margin:-30px auto 40px;padding:0 14px}
+  .wifi{padding:18px}
+  .wifi .k{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+  .wifi .v{font-size:20px;font-weight:800;word-break:break-all;margin:2px 0 10px}
+  .wifi .acts{display:flex;gap:8px;flex-wrap:wrap}
+  .sec{margin-top:10px;padding:0;overflow:hidden}
+  .sec summary{display:flex;align-items:center;gap:12px;padding:16px;cursor:pointer;font-weight:700;font-size:17px;list-style:none}
+  .sec summary::-webkit-details-marker{display:none}
+  .sec summary .ic{font-size:22px;width:30px;text-align:center}
+  .sec summary:after{content:"›";margin-left:auto;color:var(--muted);font-size:22px;transition:transform .2s}
+  .sec[open] summary:after{transform:rotate(90deg)}
+  .sec .body{padding:0 16px 18px 58px;white-space:pre-line;color:var(--ink)}
+  .sec.hl{box-shadow:0 0 0 2px var(--brand-2),var(--shadow)}
+  .contact{margin-top:14px;text-align:center;font-size:14px}
+  .foot{text-align:center;font-size:12px;color:var(--muted);margin-top:26px}
+  .qrbox{display:none;margin-top:12px;text-align:center}
+  .qrbox svg{width:180px;height:180px;background:#fff;border-radius:12px;padding:6px}
+  .empty{max-width:480px;margin:60px auto;text-align:center;padding:0 16px}
+</style>
+</head>
+<body>
+<div id="app"><div class="empty muted">Loading…</div></div>
+<div class="toast" id="toast"></div>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const { esc, $ } = TS;
+const UI = {
+  en: { wifi: 'Wi-Fi', net: 'Network', pass: 'Password', copy: 'Copy password', copied: 'Password copied ✓', copyNet: 'Copy name', showQr: 'Show Wi-Fi QR', hideQr: 'Hide QR', qrHelp: 'Scan this from another device to join automatically.', contact: 'Need help? Contact your host:', nf: 'This tag is not activated yet.', nfh: 'If you are the host, log in and activate your kit.', welcome: 'Welcome to', basic: 'Your host will add more information soon.' },
+  es: { wifi: 'Wi-Fi', net: 'Red', pass: 'Contraseña', copy: 'Copiar contraseña', copied: 'Contraseña copiada ✓', copyNet: 'Copiar red', showQr: 'Ver QR del Wi-Fi', hideQr: 'Ocultar QR', qrHelp: 'Escanéalo desde otro dispositivo para conectarte.', contact: '¿Necesitas ayuda? Contacta con tu anfitrión:', nf: 'Esta etiqueta aún no está activada.', nfh: 'Si eres el anfitrión, entra y activa tu kit.', welcome: 'Bienvenido a', basic: 'Tu anfitrión añadirá más información pronto.' },
+  de: { wifi: 'WLAN', net: 'Netzwerk', pass: 'Passwort', copy: 'Passwort kopieren', copied: 'Passwort kopiert ✓', copyNet: 'Name kopieren', showQr: 'WLAN-QR zeigen', hideQr: 'QR ausblenden', qrHelp: 'Mit einem anderen Gerät scannen, um sich zu verbinden.', contact: 'Hilfe nötig? Kontakt zum Gastgeber:', nf: 'Dieser Tag ist noch nicht aktiviert.', nfh: 'Gastgeber: bitte einloggen und Kit aktivieren.', welcome: 'Willkommen in', basic: 'Weitere Infos folgen bald.' },
+  fr: { wifi: 'Wi-Fi', net: 'Réseau', pass: 'Mot de passe', copy: 'Copier le mot de passe', copied: 'Mot de passe copié ✓', copyNet: 'Copier le nom', showQr: 'Afficher le QR Wi-Fi', hideQr: 'Masquer le QR', qrHelp: 'Scannez-le avec un autre appareil pour vous connecter.', contact: 'Besoin d’aide ? Contactez votre hôte :', nf: 'Ce tag n’est pas encore activé.', nfh: 'Hôte : connectez-vous et activez votre kit.', welcome: 'Bienvenue à', basic: 'Votre hôte ajoutera bientôt plus d’informations.' },
+  it: { wifi: 'Wi-Fi', net: 'Rete', pass: 'Password', copy: 'Copia password', copied: 'Password copiata ✓', copyNet: 'Copia nome', showQr: 'Mostra QR Wi-Fi', hideQr: 'Nascondi QR', qrHelp: 'Scansiona da un altro dispositivo per collegarti.', contact: 'Serve aiuto? Contatta il tuo host:', nf: 'Questo tag non è ancora attivo.', nfh: 'Host: accedi e attiva il tuo kit.', welcome: 'Benvenuti a', basic: 'Il tuo host aggiungerà presto altre informazioni.' },
+  nl: { wifi: 'Wifi', net: 'Netwerk', pass: 'Wachtwoord', copy: 'Wachtwoord kopiëren', copied: 'Wachtwoord gekopieerd ✓', copyNet: 'Naam kopiëren', showQr: 'Wifi-QR tonen', hideQr: 'QR verbergen', qrHelp: 'Scan met een ander apparaat om te verbinden.', contact: 'Hulp nodig? Neem contact op met je host:', nf: 'Deze tag is nog niet geactiveerd.', nfh: 'Host: log in en activeer je kit.', welcome: 'Welkom in', basic: 'Je host voegt binnenkort meer informatie toe.' }
+};
+const code = new URLSearchParams(location.search).get('t') || '';
+let data, lang;
+
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 1800); }
+async function copy(text, msg) { try { await navigator.clipboard.writeText(text); } catch (e) { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); } toast(msg); }
+const pick = (obj) => (obj && (obj[lang] || obj.en || Object.values(obj)[0])) || '';
+
+function render() {
+  const p = data.property, u = UI[lang] || UI.en;
+  const active = !p.paid_until || new Date(p.paid_until) >= new Date(new Date().toDateString());
+  document.documentElement.lang = lang; document.title = p.name;
+  const langs = (p.languages || ['en']).filter(l => UI[l]);
+  const sections = active ? (p.sections || []) : [];
+  $('#app').innerHTML = `
+    <div class="head"><small>${u.welcome}</small><h1>${esc(p.name)}</h1><p>${esc(pick(p.welcome))}</p>
+      ${langs.length > 1 ? `<div class="langs">${langs.map(l => `<button data-l="${l}" class="${l === lang ? 'on' : ''}">${l.toUpperCase()}</button>`).join('')}</div>` : ''}</div>
+    <main>
+      ${p.wifi_ssid && !p.wifi_hidden ? `<div class="card wifi ${data.section_key === 'wifi' ? 'hl' : ''}" id="s-wifi">
+        <div class="k">📶 ${u.wifi} · ${u.net}</div><div class="v">${esc(p.wifi_ssid)}</div>
+        ${p.wifi_password ? `<div class="k">${u.pass}</div><div class="v">${esc(p.wifi_password)}</div>` : ''}
+        <div class="acts">${p.wifi_password ? `<button class="btn small" id="cp">${u.copy}</button>` : ''}<button class="btn small ghost" id="cn">${u.copyNet}</button><button class="btn small ghost" id="qr">${u.showQr}</button></div>
+        <div class="qrbox" id="qrbox">${TS.qrSvg(TS.wifiString(p))}<p class="muted" style="font-size:13px">${u.qrHelp}</p></div>
+      </div>` : ''}
+      ${sections.map(s => `<details class="card sec ${s.key === data.section_key ? 'hl' : ''}" id="s-${esc(s.key)}" ${s.key === data.section_key ? 'open' : ''}>
+        <summary><span class="ic">${esc(s.icon || '•')}</span>${esc(pick(s.title))}</summary><div class="body">${esc(pick(s.body))}</div></details>`).join('')}
+      ${!sections.length ? `<p class="muted" style="text-align:center;margin-top:18px">${u.basic}</p>` : ''}
+      ${p.contact && active ? `<div class="contact muted">${u.contact}<br><b style="color:var(--ink)">${esc(p.contact)}</b></div>` : ''}
+      <div class="foot">Powered by ${esc(TS.C.BRAND)}</div>
+    </main>`;
+  document.querySelectorAll('.langs button').forEach(b => b.onclick = () => { lang = b.dataset.l; render(); });
+  const cp = $('#cp'); if (cp) cp.onclick = () => copy(p.wifi_password, u.copied);
+  const cn = $('#cn'); if (cn) cn.onclick = () => copy(p.wifi_ssid, '✓');
+  const qr = $('#qr'); if (qr) qr.onclick = () => { const b = $('#qrbox'); const show = b.style.display !== 'block'; b.style.display = show ? 'block' : 'none'; qr.textContent = show ? u.hideQr : u.showQr; };
+  const hl = document.querySelector('.hl'); if (hl && data.section_key && data.section_key !== 'wifi') setTimeout(() => hl.scrollIntoView({ behavior: 'smooth', block: 'center' }), 250);
+}
+
+(async () => {
+  try {
+    data = code ? await TS.getGuide(code) : null;
+  } catch (e) { data = null; }
+  const nav = (navigator.language || 'en').slice(0, 2);
+  if (!data || !data.property) {
+    const u = UI[nav] || UI.en;
+    $('#app').innerHTML = `<div class="empty"><div style="font-size:42px">🏷️</div><h2>${u.nf}</h2><p class="muted">${u.nfh}</p><a class="btn" href="panel.html">Host login</a></div>`;
+    return;
+  }
+  const langs = data.property.languages || ['en'];
+  lang = langs.includes(nav) ? nav : (langs.includes('en') ? 'en' : langs[0]);
+  render();
+  if (code !== 'demo') TS.logTap(code, nav).catch(() => {});
+})();
+</script>
+</body>
+</html>

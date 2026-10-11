@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Host panel — TapStay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .shell{display:grid;grid-template-columns:220px 1fr;gap:22px;padding:8px 0 60px}
+  @media (max-width:820px){.shell{grid-template-columns:1fr}}
+  .side a{display:block;padding:10px 12px;border-radius:10px;text-decoration:none;color:var(--ink);font-weight:600;font-size:15px}
+  .side a.on{background:var(--soft);color:var(--brand)}
+  .side .card{padding:10px;position:sticky;top:12px}
+  .panel h2{margin:0 0 4px;font-size:22px}
+  .lt{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 14px}
+  .lt button{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:5px 12px;font:600 13px inherit;font-family:inherit;cursor:pointer;color:var(--ink)}
+  .lt button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .secedit{border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px;background:var(--bg)}
+  .secedit .top{display:grid;grid-template-columns:70px 1fr auto;gap:10px;align-items:end}
+  .secedit .tools{display:flex;gap:6px}
+  .iconbtn{border:1px solid var(--line);background:var(--card);border-radius:8px;width:36px;height:40px;cursor:pointer;font-size:15px;color:var(--ink)}
+  .savebar{position:sticky;bottom:0;background:var(--bg);padding:12px 0;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+  .stat{font-size:28px;font-weight:800}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+  @media (max-width:640px){.stats{grid-template-columns:1fr}}
+  .bar{height:8px;border-radius:99px;background:var(--soft);overflow:hidden}.bar i{display:block;height:100%;background:var(--brand-2)}
+  .login{max-width:420px;margin:40px auto}
+  .chk{display:flex;gap:14px;flex-wrap:wrap}.chk label{display:flex;gap:6px;font-weight:500;margin:0}.chk input{width:auto}
+  code.u{font-size:12px;word-break:break-all;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar"><a class="logo" href="./"><i>((·</i><span class="brand-name">TapStay</span></a><div id="who" class="muted" style="font-size:14px"></div></header>
+  <div id="view"></div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const { C, $, esc } = TS;
+TS.demoBanner();
+document.querySelectorAll('.brand-name').forEach(e => e.textContent = C.BRAND);
+const LANGS = { en: 'English', es: 'Español', de: 'Deutsch', fr: 'Français', it: 'Italiano', nl: 'Nederlands' };
+const TEMPLATE = [
+  { key: 'checkin', icon: '🔑', title: { en: 'Check-in & keys' }, body: { en: 'Check-in from 15:00. Where are the keys / key box code?' } },
+  { key: 'appliances', icon: '☕', title: { en: 'Kitchen & appliances' }, body: { en: 'Coffee machine, oven, dishwasher, washing machine…' } },
+  { key: 'heating', icon: '🌡️', title: { en: 'Heating & air conditioning' }, body: { en: 'Where is the thermostat and how to use it.' } },
+  { key: 'rules', icon: '📋', title: { en: 'House rules' }, body: { en: 'Smoking, pets, quiet hours, max guests, rubbish & recycling.' } },
+  { key: 'local', icon: '📍', title: { en: 'Local tips' }, body: { en: 'Supermarket, breakfast, restaurants, transport, parking.' } },
+  { key: 'checkout', icon: '👋', title: { en: 'Check-out' }, body: { en: 'Check-out time and what to do before leaving.' } }
+];
+let user, props = [], cur = null, tags = [], stats = {}, tab = 'guide', elang = 'en';
+const toast = (m) => { const t = $('#toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); };
+
+async function boot() {
+  user = await TS.currentUser();
+  if (!user) return loginView();
+  $('#who').innerHTML = `${esc(user.email)} · <a href="#" id="lo">Log out</a>`;
+  $('#lo').onclick = async (e) => { e.preventDefault(); await TS.logout(); location.reload(); };
+  props = await TS.myProperties(); tags = await TS.myTags(); stats = await TS.tapStats(30);
+  if (!props.length && !tags.length) return activateView();
+  if (!props.length) { cur = newProperty(); } else cur = cur && props.find(p => p.id === cur.id) || props[0];
+  shell();
+}
+function newProperty() { return { name: 'My apartment', slug: '', languages: ['en'], welcome: { en: 'Welcome! Everything you need for your stay is below.' }, wifi_ssid: '', wifi_password: '', wifi_security: 'WPA', wifi_hidden: false, contact: '', sections: JSON.parse(JSON.stringify(TEMPLATE)) }; }
+
+function loginView() {
+  $('#view').innerHTML = `<div class="card login"><h2 style="margin-top:0">Host login</h2>
+    <p class="muted">Enter your email. ${TS.DEMO ? 'Demo mode: use <b>host@demo.test</b> (or <b>admin@demo.test</b> for the seller panel).' : 'We\'ll send you a magic link — no password needed.'}</p>
+    <form id="lf"><label for="em">Email</label><input id="em" type="email" required value="${TS.DEMO ? 'host@demo.test' : ''}"><p id="lm" class="muted"></p><button class="btn" style="width:100%">Continue</button></form></div>`;
+  $('#lf').onsubmit = async (e) => {
+    e.preventDefault(); const em = $('#em').value.trim();
+    try { const r = await TS.login(em); if (r.demo) { if (await TS.isAdmin()) location.href = 'admin.html'; else boot(); } else $('#lm').textContent = 'Check your inbox and click the link to log in.'; }
+    catch (err) { $('#lm').textContent = err.message; }
+  };
+}
+function activateView() {
+  $('#view').innerHTML = `<div class="card login"><h2 style="margin-top:0">Activate your kit</h2>
+    <p class="muted">Enter the kit code printed on the card inside your box (e.g. KIT-7HQ2KD).</p>
+    <form id="af"><label for="kc">Kit code</label><input id="kc" required placeholder="KIT-XXXXXX" style="text-transform:uppercase"><p id="am" style="color:var(--danger)"></p><button class="btn" style="width:100%">Activate</button></form></div>`;
+  $('#af').onsubmit = async (e) => { e.preventDefault(); try { await TS.claimKit($('#kc').value); toast('Kit activated ✓'); boot(); } catch (err) { $('#am').textContent = err.message; } };
+}
+
+function shell() {
+  const paid = cur.paid_until ? new Date(cur.paid_until) : null;
+  $('#view').innerHTML = `<div class="shell">
+    <nav class="side"><div class="card">
+      ${props.length > 1 ? `<select id="ps" style="margin-bottom:8px">${props.map(p => `<option value="${p.id}" ${p.id === cur.id ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}</select>` : `<div style="padding:8px 12px;font-weight:800">${esc(cur.name)}</div>`}
+      ${[['guide', '✏️ Guide'], ['wifi', '📶 Wi-Fi'], ['tags', '🏷️ Tags & stats'], ['account', '⚙️ Account']].map(([k, t]) => `<a href="#" data-t="${k}" class="${tab === k ? 'on' : ''}">${t}</a>`).join('')}
+      <a href="${cur.id ? TS.tagUrl(firstTag()) : '#'}" target="_blank" class="btn small ghost" style="margin:10px 12px 4px">Preview guest view ↗</a>
+      ${paid ? `<p class="muted" style="font-size:12px;padding:0 12px">Guide active until <b>${paid.toLocaleDateString()}</b></p>` : ''}
+    </div></nav>
+    <section class="panel card" id="pane"></section></div>`;
+  document.querySelectorAll('.side a[data-t]').forEach(a => a.onclick = (e) => { e.preventDefault(); tab = a.dataset.t; shell(); });
+  const ps = $('#ps'); if (ps) ps.onchange = () => { cur = props.find(p => p.id === ps.value); shell(); };
+  ({ guide: guidePane, wifi: wifiPane, tags: tagsPane, account: accountPane })[tab]();
+}
+function firstTag() { const t = tags.find(t => t.property_id === cur.id); return t ? t.code : 'demo'; }
+function langTabs() { return `<div class="lt">${cur.languages.map(l => `<button data-l="${l}" class="${l === elang ? 'on' : ''}">${LANGS[l]}</button>`).join('')}</div>`; }
+function bindLangTabs(fn) { if (!cur.languages.includes(elang)) elang = cur.languages[0]; document.querySelectorAll('.lt button').forEach(b => b.onclick = () => { collect(); elang = b.dataset.l; fn(); }); }
+let collect = () => {};
+
+function guidePane() {
+  if (!cur.languages.includes(elang)) elang = cur.languages[0];
+  $('#pane').innerHTML = `<h2>Guest guide</h2><p class="muted">Edit the sections guests see. Switch language to add translations.</p>
+    <label>Property name</label><input id="pn" value="${esc(cur.name)}">
+    <label>Languages offered</label><div class="chk">${Object.entries(LANGS).map(([k, v]) => `<label><input type="checkbox" value="${k}" ${cur.languages.includes(k) ? 'checked' : ''} class="lg"> ${v}</label>`).join('')}</div>
+    <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+    ${langTabs()}
+    <label>Welcome message (${elang.toUpperCase()})</label><textarea id="wm">${esc((cur.welcome || {})[elang] || '')}</textarea>
+    <div id="secs">${cur.sections.map((s, i) => `<div class="secedit" data-i="${i}">
+      <div class="top"><div><label>Icon</label><input class="si" value="${esc(s.icon)}" maxlength="4"></div>
+      <div><label>Title (${elang.toUpperCase()})</label><input class="st" value="${esc((s.title || {})[elang] || '')}" placeholder="${esc((s.title || {}).en || '')}"></div>
+      <div class="tools"><button class="iconbtn up" title="Move up">↑</button><button class="iconbtn dn" title="Move down">↓</button><button class="iconbtn rm" title="Delete">✕</button></div></div>
+      <label>Text (${elang.toUpperCase()})</label><textarea class="sb" placeholder="${esc((s.body || {}).en || '')}">${esc((s.body || {})[elang] || '')}</textarea></div>`).join('')}</div>
+    <button class="btn ghost small" id="add" style="margin-top:12px">+ Add section</button>
+    <label>Contact shown to guests (optional)</label><input id="ct" value="${esc(cur.contact || '')}" placeholder="+44 7700 900123 (WhatsApp)">
+    <div class="savebar"><button class="btn" id="sv">Save changes</button></div>`;
+  collect = () => {
+    cur.name = $('#pn').value; cur.contact = $('#ct').value;
+    cur.welcome = { ...(cur.welcome || {}), [elang]: $('#wm').value };
+    document.querySelectorAll('.secedit').forEach(d => { const s = cur.sections[d.dataset.i]; s.icon = $('.si', d).value; s.title = { ...(s.title || {}), [elang]: $('.st', d).value }; s.body = { ...(s.body || {}), [elang]: $('.sb', d).value }; });
+    const ls = [...document.querySelectorAll('.lg:checked')].map(x => x.value); cur.languages = ls.length ? ls : ['en'];
+  };
+  bindLangTabs(guidePane);
+  document.querySelectorAll('.lg').forEach(c => c.onchange = () => { collect(); guidePane(); });
+  document.querySelectorAll('.secedit').forEach(d => {
+    const i = +d.dataset.i;
+    $('.up', d).onclick = () => { collect(); if (i > 0) [cur.sections[i - 1], cur.sections[i]] = [cur.sections[i], cur.sections[i - 1]]; guidePane(); };
+    $('.dn', d).onclick = () => { collect(); if (i < cur.sections.length - 1) [cur.sections[i + 1], cur.sections[i]] = [cur.sections[i], cur.sections[i + 1]]; guidePane(); };
+    $('.rm', d).onclick = () => { if (confirm('Delete this section?')) { collect(); cur.sections.splice(i, 1); guidePane(); } };
+  });
+  $('#add').onclick = () => { collect(); cur.sections.push({ key: 's' + TS.rand(4).toLowerCase(), icon: '⭐', title: { [elang]: '' }, body: { [elang]: '' } }); guidePane(); };
+  $('#sv').onclick = save;
+}
+function wifiPane() {
+  $('#pane').innerHTML = `<h2>Wi-Fi</h2><p class="muted">Shown at the top of the guide. Change it here whenever you change your router password.</p>
+    <div class="row"><div><label>Network name (SSID)</label><input id="ws" value="${esc(cur.wifi_ssid || '')}"></div>
+    <div><label>Password</label><input id="wp" value="${esc(cur.wifi_password || '')}"></div></div>
+    <label>Security</label><select id="wsec">${['WPA', 'WEP', 'nopass'].map(s => `<option ${cur.wifi_security === s ? 'selected' : ''} value="${s}">${s === 'nopass' ? 'Open (no password)' : s + (s === 'WPA' ? ' / WPA2 / WPA3' : '')}</option>`).join('')}</select>
+    <label style="display:flex;gap:10px;font-weight:500"><input type="checkbox" id="wh" style="width:auto" ${cur.wifi_hidden ? 'checked' : ''}> Hide Wi-Fi from the guide (e.g. between stays)</label>
+    <div style="margin-top:16px;display:flex;gap:20px;align-items:center;flex-wrap:wrap"><div style="width:150px;background:#fff;border-radius:12px;padding:6px">${cur.wifi_ssid ? TS.qrSvg(TS.wifiString(cur)) : ''}</div><p class="muted" style="max-width:40ch">Optional printable Wi-Fi QR (joins automatically when scanned). If you print it, remember to reprint it when the password changes — the NFC plaque never needs reprinting.</p></div>
+    <div class="savebar"><button class="btn" id="sv">Save changes</button></div>`;
+  collect = () => { cur.wifi_ssid = $('#ws').value.trim(); cur.wifi_password = $('#wp').value; cur.wifi_security = $('#wsec').value; cur.wifi_hidden = $('#wh').checked; };
+  $('#sv').onclick = save;
+}
+function tagsPane() {
+  collect = () => {};
+  const mine = tags; const total = Object.values(stats).reduce((a, b) => a + b, 0); const max = Math.max(1, ...Object.values(stats));
+  const opts = (sel) => [['', '— Whole guide —'], ['wifi', '📶 Wi-Fi'], ...cur.sections.map(s => [s.key, (s.icon || '') + ' ' + ((s.title || {}).en || (s.title || {})[cur.languages[0]] || s.key)])].map(([v, t]) => `<option value="${esc(v)}" ${v === (sel || '') ? 'selected' : ''}>${esc(t)}</option>`).join('');
+  $('#pane').innerHTML = `<h2>Tags & statistics</h2><p class="muted">Choose what each tag opens. Counts are anonymous (last 30 days).</p>
+    <div class="stats"><div class="card"><div class="muted">Taps · 30 days</div><div class="stat">${total}</div></div><div class="card"><div class="muted">Active tags</div><div class="stat">${mine.filter(t => t.property_id).length}</div></div><div class="card"><div class="muted">Most used</div><div class="stat" style="font-size:18px">${esc((mine.slice().sort((a, b) => (stats[b.code] || 0) - (stats[a.code] || 0))[0] || {}).label || '—')}</div></div></div>
+    <table><thead><tr><th>Tag</th><th>Opens</th><th>Taps</th></tr></thead><tbody>
+    ${mine.map(t => `<tr><td><b>${esc(t.label || t.code)}</b><br><code class="u">${esc(TS.tagUrl(t.code))}</code></td>
+      <td><select data-c="${esc(t.code)}" class="tsel">${opts(t.property_id === cur.id ? t.section_key : null)}</select>${t.property_id && t.property_id !== cur.id ? '<br><span class="muted" style="font-size:12px">Linked to another property</span>' : ''}</td>
+      <td style="min-width:110px"><b>${stats[t.code] || 0}</b><div class="bar"><i style="width:${(stats[t.code] || 0) / max * 100}%"></i></div></td></tr>`).join('')}
+    </tbody></table>
+    <p class="muted" style="font-size:14px">Bought extra stickers? <a href="#" id="more">Activate another kit code</a>.</p>`;
+  document.querySelectorAll('.tsel').forEach(s => s.onchange = async () => {
+    if (!cur.id) { toast('Save the guide first'); return; }
+    await TS.updateTag(s.dataset.c, { property_id: cur.id, section_key: s.value || null }); tags = await TS.myTags(); toast('Tag updated ✓');
+  });
+  $('#more').onclick = (e) => { e.preventDefault(); const c = prompt('Kit code'); if (c) TS.claimKit(c).then(() => { toast('Kit activated ✓'); boot(); }).catch(err => alert(err.message)); };
+}
+function accountPane() {
+  collect = () => {};
+  const paid = cur.paid_until ? new Date(cur.paid_until) : null;
+  $('#pane').innerHTML = `<h2>Account</h2>
+    <p>Logged in as <b>${esc(user.email)}</b>.</p>
+    <p>Guide subscription for <b>${esc(cur.name)}</b>: ${paid ? `active until <b>${paid.toLocaleDateString()}</b>` : 'not set'}.</p>
+    <p class="muted">Renewal: ${TS.money(C.RENEWAL_PRICE)}/year. We email you 30 days before it expires with payment options (PayPal or bank transfer). If you don't renew, the plaque keeps showing your Wi-Fi details.</p>
+    <p><a class="btn ghost small" href="mailto:${esc(C.CONTACT_EMAIL)}?subject=Renewal%20${encodeURIComponent(cur.name)}">Renew or ask a question</a></p>
+    <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+    <p><button class="btn ghost small" id="np">+ Add another property</button></p>`;
+  $('#np').onclick = () => { cur = newProperty(); tab = 'guide'; shell(); };
+}
+async function save() {
+  collect(); if (!cur.slug) cur.slug = TS.slugify(cur.name) + '-' + TS.rand(4).toLowerCase();
+  try { const saved = await TS.saveProperty(cur); props = await TS.myProperties(); cur = props.find(p => p.id === (saved.id || cur.id)) || props[props.length - 1]; toast('Saved ✓'); shell(); }
+  catch (e) { alert('Could not save: ' + e.message); }
+}
+boot();
+</script>
+</body>
+</html>

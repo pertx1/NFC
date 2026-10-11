@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TapStay — NFC Wi-Fi plaque & editable guest guide for Airbnb hosts</title>
+<meta name="description" content="Guests tap their phone to get your Wi-Fi password and house guide. You update everything from your phone — no reprinting. NFC plaque + editable digital guidebook for vacation rentals.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .hero{padding:40px 0 64px;display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center}
+  @media (max-width:860px){.hero{grid-template-columns:1fr;padding-top:16px}}
+  .hero h1{font-size:clamp(34px,5vw,54px);line-height:1.05;letter-spacing:-.02em;margin:14px 0 16px}
+  .hero h1 span{color:var(--brand)}
+  .hero p.lead{font-size:19px;color:var(--muted);max-width:34ch;margin:0 0 26px}
+  .cta{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .trust{margin-top:22px;display:flex;gap:18px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+  .trust b{color:var(--ink)}
+  .stage{position:relative;height:460px}
+  .plaque{position:absolute;left:0;top:230px;z-index:2;width:210px;height:210px;border-radius:22px;background:linear-gradient(145deg,#d9b48a,#b98a5a);box-shadow:0 30px 60px rgba(60,35,10,.25),inset 0 0 0 1px rgba(255,255,255,.25);transform:rotate(-6deg);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#3b2410;text-align:center;padding:18px}
+  .plaque .nfc{width:70px;height:70px;border-radius:50%;border:3px solid #3b2410;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+  .plaque b{font-size:19px;letter-spacing:.02em}.plaque small{font-size:12px;opacity:.8;margin-top:4px}
+  .phone{position:absolute;right:0;top:0;width:250px;height:460px;border-radius:38px;background:#0b1f2e;padding:12px;box-shadow:0 40px 80px rgba(11,31,46,.35)}
+  .screen{width:100%;height:100%;border-radius:28px;background:#fbfaf7;overflow:hidden;font-size:12px;color:#14202c}
+  .screen .sh{background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;padding:26px 14px 14px}
+  .screen .sh b{display:block;font-size:15px}
+  .screen .wifi{margin:-10px 10px 8px;background:#fff;border-radius:12px;padding:10px;box-shadow:0 6px 18px rgba(0,0,0,.08)}
+  .screen .wifi code{display:block;font-size:13px;font-weight:700;margin-top:2px}
+  .screen .copy{display:inline-block;margin-top:6px;background:#0f766e;color:#fff;border-radius:99px;padding:4px 10px;font-weight:700;font-size:11px}
+  .screen .item{margin:6px 10px;background:#fff;border-radius:10px;padding:9px 10px;border:1px solid #e2e7ee;display:flex;gap:8px;align-items:center;font-weight:600}
+  .waves{position:absolute;left:150px;top:180px;z-index:3;width:90px;height:90px}
+  .waves span{position:absolute;inset:0;border:2px solid var(--brand-2);border-radius:50%;animation:ping 2.4s infinite;opacity:0}
+  .waves span:nth-child(2){animation-delay:.8s}.waves span:nth-child(3){animation-delay:1.6s}
+  @keyframes ping{0%{transform:scale(.3);opacity:.9}100%{transform:scale(1.4);opacity:0}}
+  @media (prefers-reduced-motion:reduce){.waves span{animation:none;opacity:.3}}
+  @media (max-width:520px){.stage{height:420px;transform:scale(.88);transform-origin:top center}}
+  section{padding:56px 0}
+  h2{font-size:clamp(26px,3.4vw,36px);letter-spacing:-.01em;margin:0 0 12px}
+  .sub{color:var(--muted);max-width:60ch;margin:0 0 32px;font-size:17px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media (max-width:860px){.grid3{grid-template-columns:1fr}}
+  .step .n{width:34px;height:34px;border-radius:50%;background:var(--soft);color:var(--brand);font-weight:800;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+  .step h3,.feat h3{margin:0 0 6px;font-size:18px}
+  .feat .ic{font-size:24px;margin-bottom:8px}
+  .band{background:#0b1f2e;color:#e8eef4;border-radius:24px;padding:40px}
+  .band .sub{color:#9fb3c3}
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media (max-width:760px){.compare{grid-template-columns:1fr}.band{padding:24px}}
+  .compare .card{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1);box-shadow:none;color:#e8eef4}
+  .compare li{margin:6px 0}
+  .price{display:flex;flex-direction:column}
+  .price .amt{font-size:40px;font-weight:800;letter-spacing:-.02em;margin:6px 0}
+  .price ul{padding-left:18px;margin:10px 0 20px;flex:1}
+  .price.best{border:2px solid var(--brand);position:relative}
+  .price.best:before{content:"Most popular";position:absolute;top:-12px;left:20px;background:var(--brand);color:#fff;font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px}
+  details{border-bottom:1px solid var(--line);padding:16px 0}
+  summary{cursor:pointer;font-weight:700;font-size:17px;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary:after{content:"+";float:right;color:var(--brand);font-size:22px;line-height:1}
+  details[open] summary:after{content:"–"}
+  details p{color:var(--muted);margin:10px 0 0}
+  footer{padding:40px 0;color:var(--muted);font-size:14px;border-top:1px solid var(--line);margin-top:40px}
+  footer a{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <a class="logo" href="./"><i>((·</i><span class="brand-name">TapStay</span></a>
+    <nav style="display:flex;gap:10px;align-items:center">
+      <a href="g.html?t=demo" class="btn ghost small">Live demo</a>
+      <a href="panel.html" class="btn ghost small">Host login</a>
+      <a href="order.html" class="btn small">Order</a>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <div>
+      <span class="pill">For Airbnb, Booking & holiday-let hosts</span>
+      <h1>Guests tap. <span>Wi-Fi & house guide</span> appear.</h1>
+      <p class="lead">A beautiful NFC plaque plus a guest guide you edit from your phone. Change the Wi-Fi password, door code or tips in seconds — never reprint a welcome book again.</p>
+      <div class="cta">
+        <a class="btn" href="order.html">Get the Starter Kit — <span class="p-starter">€45</span></a>
+        <a class="btn ghost" href="g.html?t=demo">See what guests see →</a>
+      </div>
+      <div class="trust">
+        <span><b>No app</b> for guests</span><span><b>iPhone & Android</b></span><span><b>6 languages</b></span><span><b>12 months</b> guide included</span>
+      </div>
+    </div>
+    <div class="stage" aria-hidden="true">
+      <div class="plaque">
+        <div class="nfc"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#3b2410" stroke-width="2" stroke-linecap="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/></svg></div>
+        <b>TAP FOR WI-FI</b><small>& house guide · or scan</small>
+      </div>
+      <div class="waves"><span></span><span></span><span></span></div>
+      <div class="phone"><div class="screen">
+        <div class="sh"><small>Welcome to</small><b>Seaside Loft · Brighton</b></div>
+        <div class="wifi"><small>Wi-Fi network</small><code>SeasideLoft_5G</code><small>Password</small><code>sunny-beach-2026</code><span class="copy">Copy password</span></div>
+        <div class="item">🔑 Check-in & keys</div><div class="item">☕ Coffee machine</div><div class="item">🌡️ Heating</div><div class="item">📋 House rules</div><div class="item">👋 Check-out</div>
+      </div></div>
+    </div>
+  </div>
+</div>
+
+<section id="how"><div class="wrap">
+  <h2>Set up in 10 minutes</h2>
+  <p class="sub">Everything arrives pre-programmed. You just activate the kit and write your guide.</p>
+  <div class="grid3">
+    <div class="card step"><div class="n">1</div><h3>Activate your kit</h3><p class="muted">Log in with your email (no password) and enter the kit code printed on the card inside the box.</p></div>
+    <div class="card step"><div class="n">2</div><h3>Write your guide</h3><p class="muted">Wi-Fi, check-in, appliances, rules, local tips. Start from our template and add translations.</p></div>
+    <div class="card step"><div class="n">3</div><h3>Stick & forget</h3><p class="muted">Plaque by the door, stickers on the coffee machine or thermostat. Edit anytime from your phone.</p></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Why hosts switch</h2>
+  <p class="sub">Less “what's the Wi-Fi?” at 11 pm. More 5-star check-ins.</p>
+  <div class="grid3">
+    <div class="card feat"><div class="ic">✏️</div><h3>Edit, don't reprint</h3><p class="muted">Changed the router or the key-box code? Update it once; every plaque and sticker shows the new info instantly.</p></div>
+    <div class="card feat"><div class="ic">📶</div><h3>Wi-Fi in one tap</h3><p class="muted">Network name and password with a one-tap copy button. A QR on the plaque works for older phones.</p></div>
+    <div class="card feat"><div class="ic">🏷️</div><h3>Answers where they're needed</h3><p class="muted">A sticker on the coffee machine opens the coffee instructions. On the thermostat, the heating ones.</p></div>
+    <div class="card feat"><div class="ic">🌍</div><h3>Multilingual</h3><p class="muted">Guests see the guide in their phone's language when you add a translation (EN, ES, DE, FR, IT, NL).</p></div>
+    <div class="card feat"><div class="ic">📊</div><h3>See what guests use</h3><p class="muted">Anonymous tap counts per tag show which instructions guests actually need. No guest tracking, no cookies.</p></div>
+    <div class="card feat"><div class="ic">🔒</div><h3>Locked tags</h3><p class="muted">Tags are write-locked before shipping, so nobody can reprogram them. Hide the Wi-Fi section between stays if you want.</p></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="band">
+    <h2>Printed welcome book vs. TapStay</h2>
+    <p class="sub">Most hosts already have a laminated binder or a QR printout. Here's the difference.</p>
+    <div class="compare">
+      <div class="card"><b>Printed / static QR</b><ul><li>Reprint every time something changes</li><li>Gets lost, stained or outdated</li><li>One language</li><li>No idea if anyone reads it</li></ul></div>
+      <div class="card"><b>TapStay</b><ul><li>Edit from your phone in seconds</li><li>Plaque + stickers stay forever</li><li>Guests read in their language</li><li>See which sections get tapped</li></ul></div>
+    </div>
+  </div>
+</div></section>
+
+<section id="pricing"><div class="wrap">
+  <h2>Simple pricing</h2>
+  <p class="sub">One-off kit price with 12 months of the editable guide included. After that, <b class="p-renew">€29</b>/year per property — or keep the plaque pointing to a basic Wi-Fi page for free.</p>
+  <div class="grid3" id="price-grid"></div>
+  <p class="muted" style="margin-top:16px;font-size:14px">Shipping: Spain <span class="s-ES"></span> · EU <span class="s-EU"></span> · UK <span class="s-UK"></span> · US <span class="s-US"></span> (US import duties may apply). Pay by PayPal (cards accepted) or bank transfer.</p>
+</div></section>
+
+<section id="faq"><div class="wrap narrow">
+  <h2>Questions</h2>
+  <details><summary>Do guests need an app?</summary><p>No. Any iPhone from XS (2018) onwards and almost every Android phone reads NFC natively — they just hold the phone near the plaque. Older phones can scan the QR code printed on it.</p></details>
+  <details><summary>Will an iPhone join the Wi-Fi automatically?</summary><p>iPhones open the guide page and the password is copied with one tap. Android and iPhone users can also scan a Wi-Fi QR. We keep the plaque pointing to your guide so it never breaks when you change the password.</p></details>
+  <details><summary>What happens if I change my Wi-Fi password?</summary><p>Log in, change it, save. Every tag shows the new password immediately — nothing to reprint or reprogram.</p></details>
+  <details><summary>What if I stop paying after 12 months?</summary><p>Your plaque keeps working and shows a basic page with your Wi-Fi details. The full multi-section guide, stickers and statistics need the €29/year renewal.</p></details>
+  <details><summary>Can I use it in several properties?</summary><p>Yes — each kit is one property. The Host 5-Pack is designed for co-hosts and managers.</p></details>
+  <details><summary>How do I pay?</summary><p>PayPal (you can pay with a debit or credit card without a PayPal account) or SEPA bank transfer. Spanish customers can also use Bizum. Kits are made to order and ship within 3–5 working days after payment.</p></details>
+  <details><summary>Is guest data collected?</summary><p>No. We count taps anonymously per tag (no IP addresses, no cookies). See our <a href="legal.html">privacy policy</a>.</p></details>
+</div></section>
+
+<div class="wrap" style="text-align:center;padding:24px 16px 0">
+  <a class="btn" href="order.html">Order your kit</a>
+</div>
+
+<footer><div class="wrap" style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap">
+  <span>© <span id="y"></span> <span class="brand-name">TapStay</span> · Made in Spain</span>
+  <span><a href="legal.html">Legal notice & privacy</a> · <a href="legal.html#terms">Terms</a> · <a class="mail" href="#">Contact</a></span>
+</div></footer>
+
+<script src="config.js"></script>
+<script>
+  const C = window.APP_CONFIG;
+  const m = n => new Intl.NumberFormat('en-IE',{style:'currency',currency:C.CURRENCY,maximumFractionDigits:0}).format(n);
+  document.querySelectorAll('.brand-name').forEach(e => e.textContent = C.BRAND);
+  document.title = document.title.replace('TapStay', C.BRAND);
+  document.getElementById('y').textContent = new Date().getFullYear();
+  document.querySelectorAll('.mail').forEach(a => a.href = 'mailto:' + C.CONTACT_EMAIL);
+  document.querySelector('.p-starter').textContent = m(C.PRODUCTS.find(p=>p.id==='starter').price);
+  document.querySelector('.p-renew').textContent = m(C.RENEWAL_PRICE);
+  ['ES','EU','UK','US'].forEach(k => document.querySelector('.s-'+k).textContent = m(C.SHIPPING[k]));
+  const extras = {
+    starter: ['Wooden or acrylic NFC + QR plaque (10×10 cm)','3 NFC room stickers','Editable guide, 12 months','Up to 6 languages','Tap statistics'],
+    stickers: ['5 NFC stickers (25 mm)','Waterproof, write-locked','Link each one to any section','Works with your existing kit'],
+    pro5: ['5 complete Starter Kits','One login for all properties','Copy a guide between properties','Priority email support']
+  };
+  document.getElementById('price-grid').innerHTML = C.PRODUCTS.map(p => `
+    <div class="card price ${p.id==='starter'?'best':''}">
+      <b>${p.name}</b><div class="amt">${m(p.price)}</div><span class="muted">${p.desc}</span>
+      <ul>${(extras[p.id]||[]).map(x=>`<li>${x}</li>`).join('')}</ul>
+      <a class="btn ${p.id==='starter'?'':'ghost'}" href="order.html?p=${p.id}">Order</a>
+    </div>`).join('');
+</script>
+</body>
+</html>

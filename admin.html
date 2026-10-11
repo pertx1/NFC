@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Panel de vendedor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .tabs{display:flex;gap:8px;margin:6px 0 18px;flex-wrap:wrap}
+  .tabs button{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:8px 16px;font:600 14px inherit;font-family:inherit;cursor:pointer;color:var(--ink)}
+  .tabs button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+  @media (max-width:760px){.kpis{grid-template-columns:1fr 1fr}}
+  .kpis b{display:block;font-size:26px}
+  .urls{font-family:ui-monospace,Consolas,monospace;font-size:13px;background:var(--soft);border-radius:10px;padding:12px;white-space:pre-wrap;word-break:break-all}
+  .kitcard{width:105mm;min-height:74mm;border:1px dashed #9aa;border-radius:6px;padding:8mm;background:#fff;color:#14202c;font-size:11pt}
+  .kitcard h3{margin:0 0 2mm;font-size:15pt}.kitcard .code{font:800 20pt ui-monospace,Consolas,monospace;letter-spacing:.06em;margin:3mm 0}
+  @media print{body *{visibility:hidden}.printable,.printable *{visibility:visible}.printable{position:absolute;left:0;top:0}.demo-banner{display:none}}
+  td .btn{margin:2px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar"><a class="logo" href="./"><i>((·</i><span>Panel de vendedor</span></a><div id="who" class="muted" style="font-size:14px"></div></header>
+  <div id="view"></div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const { C, $, esc, money } = TS;
+TS.demoBanner();
+let tab = 'orders';
+const toast = (m) => { const t = $('#toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); };
+const ST = { pending: ['Pendiente de pago', 'warn'], paid: ['Pagado', 'ok'], shipped: ['Enviado', ''], cancelled: ['Cancelado', 'warn'] };
+const PM = { paypal: 'PayPal', transfer: 'Transferencia', bizum: 'Bizum', shopify: 'Shopify' };
+
+async function boot() {
+  const u = await TS.currentUser();
+  if (!u || !(await TS.isAdmin())) {
+    $('#view').innerHTML = `<div class="card" style="max-width:420px;margin:40px auto"><h2 style="margin-top:0">Acceso de vendedor</h2><p class="muted">${TS.DEMO ? 'Demo: usa <b>admin@demo.test</b>.' : 'Entra con el email que añadiste a la tabla <code>admins</code>.'}</p>
+      <form id="lf"><input id="em" type="email" required value="${TS.DEMO ? 'admin@demo.test' : ''}"><p id="lm" class="muted"></p><button class="btn" style="width:100%">Entrar</button></form></div>`;
+    $('#lf').onsubmit = async (e) => { e.preventDefault(); const r = await TS.login($('#em').value); if (r.demo) boot(); else $('#lm').textContent = 'Revisa tu email y pulsa el enlace.'; };
+    return;
+  }
+  $('#who').innerHTML = `${esc(u.email)} · <a href="#" id="lo">Salir</a>`;
+  $('#lo').onclick = async (e) => { e.preventDefault(); await TS.logout(); location.reload(); };
+  render();
+}
+async function render() {
+  $('#view').innerHTML = `<div class="tabs">${[['orders', '📦 Pedidos'], ['kits', '🏷️ Kits y etiquetas'], ['renew', '🔁 Renovaciones']].map(([k, t]) => `<button data-t="${k}" class="${k === tab ? 'on' : ''}">${t}</button>`).join('')}</div><div id="pane" class="card"></div>`;
+  document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { tab = b.dataset.t; render(); });
+  await ({ orders, kits, renew })[tab]();
+}
+async function orders() {
+  const os = await TS.listOrders();
+  const paid = os.filter(o => o.status === 'paid' || o.status === 'shipped');
+  $('#pane').innerHTML = `<div class="kpis">
+      <div class="card"><span class="muted">Pedidos</span><b>${os.length}</b></div>
+      <div class="card"><span class="muted">Pendientes de pago</span><b>${os.filter(o => o.status === 'pending').length}</b></div>
+      <div class="card"><span class="muted">Por enviar</span><b>${os.filter(o => o.status === 'paid').length}</b></div>
+      <div class="card"><span class="muted">Facturado</span><b>${money(paid.reduce((s, o) => s + Number(o.total), 0))}</b></div></div>
+    <div style="overflow-x:auto"><table><thead><tr><th>Pedido</th><th>Cliente</th><th>Productos</th><th>Total / pago</th><th>Estado</th><th></th></tr></thead><tbody>
+    ${os.map(o => `<tr><td><b>${esc(o.ref)}</b><br><span class="muted">${new Date(o.created_at).toLocaleDateString()}</span></td>
+      <td>${esc(o.name)}<br><a href="mailto:${esc(o.email)}?subject=${encodeURIComponent('Your order ' + o.ref)}">${esc(o.email)}</a><br><span class="muted" style="font-size:13px">${esc(o.country)} · ${esc(o.address)}</span>${o.vat ? `<br><span class="muted" style="font-size:13px">IVA: ${esc(o.vat)}</span>` : ''}</td>
+      <td>${(o.items || []).map(i => `${i.qty} × ${esc((C.PRODUCTS.find(p => p.id === i.id) || {}).name || i.id)}`).join('<br>')}<br><span class="muted">${esc(o.finish || '')}</span></td>
+      <td><b>${money(o.total)}</b><br>${PM[o.payment_method] || o.payment_method}</td>
+      <td><span class="pill ${ST[o.status][1]}">${ST[o.status][0]}</span></td>
+      <td>${o.status === 'pending' ? `<button class="btn small" data-a="paid" data-r="${o.ref}">Marcar pagado</button>` : ''}
+          ${o.status === 'paid' ? `<button class="btn small" data-k="${o.ref}" data-n="${tagCount(o)}">Crear kit (${tagCount(o)} etiquetas)</button><button class="btn small ghost" data-a="shipped" data-r="${o.ref}">Marcar enviado</button>` : ''}
+          ${o.status === 'pending' ? `<button class="btn small ghost" data-a="cancelled" data-r="${o.ref}">Cancelar</button>` : ''}</td></tr>`).join('')}
+    </tbody></table></div>`;
+  document.querySelectorAll('[data-a]').forEach(b => b.onclick = async () => { await TS.setOrderStatus(b.dataset.r, b.dataset.a); toast('Actualizado ✓'); orders(); });
+  document.querySelectorAll('[data-k]').forEach(b => b.onclick = async () => { const r = await TS.createKit(b.dataset.k, +b.dataset.n); tab = 'kits'; await render(); showKit(r.kit, r.tags); });
+}
+function tagCount(o) { return (o.items || []).reduce((s, i) => s + i.qty * ({ starter: 4, stickers: 5, pro5: 20 }[i.id] || 0), 0) || 4; }
+async function kits() {
+  const ks = await TS.listKits();
+  $('#pane').innerHTML = `<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center"><div><h2 style="margin:0">Kits</h2><p class="muted" style="margin:4px 0 0">Cada kit = un código de activación + sus etiquetas. Graba cada URL en su etiqueta con NFC Tools.</p></div>
+    <div style="display:flex;gap:8px"><input id="nn" type="number" value="4" min="1" max="50" style="width:80px"><button class="btn small" id="nk">Crear kit suelto</button></div></div>
+    <div id="kitout"></div>
+    <table style="margin-top:14px"><thead><tr><th>Kit</th><th>Pedido</th><th>Etiquetas</th><th>Estado</th><th></th></tr></thead><tbody>
+    ${ks.map(k => `<tr><td><b>${esc(k.code)}</b></td><td>${esc(k.order_ref || '—')}</td><td>${(k.tags || []).length}</td><td>${k.claimed_by ? '<span class="pill ok">Activado</span>' : '<span class="pill warn">Sin activar</span>'}</td><td><button class="btn small ghost" data-s="${esc(k.code)}">Ver / imprimir</button></td></tr>`).join('')}</tbody></table>`;
+  $('#nk').onclick = async () => { const r = await TS.createKit(null, +$('#nn').value || 4); await kits(); showKit(r.kit, r.tags); };
+  document.querySelectorAll('[data-s]').forEach(b => b.onclick = () => { const k = ks.find(x => x.code === b.dataset.s); showKit(k, k.tags || []); });
+}
+function showKit(kit, tags) {
+  const panelUrl = TS.baseUrl() + 'panel.html';
+  $('#kitout').innerHTML = `<div class="card" style="margin-top:16px;background:var(--bg)">
+    <h3 style="margin-top:0">Kit ${esc(kit.code)}</h3>
+    <p><b>1. Graba estas URLs</b> (una por etiqueta, en este orden; la primera va en la placa):</p>
+    <div class="urls">${tags.map((t, i) => `${i + 1}. ${esc(t.label || '')}  →  ${esc(TS.tagUrl(t.code))}`).join('\n')}</div>
+    <p style="margin-top:14px"><b>2. Imprime la tarjeta de activación</b> y métela en la caja:</p>
+    <div class="printable"><div class="kitcard">
+      <h3>Welcome to ${esc(C.BRAND)} 👋</h3><div>Activate your guide in 3 minutes:</div>
+      <ol style="padding-left:18px;margin:2mm 0"><li>Go to <b>${esc(panelUrl.replace(/^https?:\/\//, ''))}</b></li><li>Log in with your email</li><li>Enter your kit code:</li></ol>
+      <div class="code">${esc(kit.code)}</div>
+      <div style="display:flex;gap:4mm;align-items:center"><div style="width:22mm">${TS.qrSvg(panelUrl)}</div><small>Scan to open the host panel. Questions: ${esc(C.CONTACT_EMAIL)}</small></div>
+    </div></div>
+    <p><button class="btn small" onclick="print()">Imprimir tarjeta</button> <button class="btn small ghost" id="cpu">Copiar URLs</button></p>
+    <p style="margin-top:18px"><b>3. Diseño de la placa para el taller</b> (10 × 10 cm, con el QR de respaldo de ESTE kit):</p>
+    <div style="width:220px;border-radius:14px;overflow:hidden;box-shadow:var(--shadow)">${plaqueSvg(tags[0] ? TS.tagUrl(tags[0].code) : TS.baseUrl()).replace('width="100mm" height="100mm"', 'width="100%" style="display:block"')}</div>
+    <p><button class="btn small ghost" id="dlp">Descargar placa (SVG)</button></p></div>`;
+  $('#dlp').onclick = () => { const blob = new Blob([plaqueSvg(TS.tagUrl(tags[0].code))], { type: 'image/svg+xml' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `placa-${kit.code}.svg`; a.click(); };
+  $('#cpu').onclick = () => navigator.clipboard.writeText(tags.map(t => TS.tagUrl(t.code)).join('\n')).then(() => toast('URLs copiadas ✓'));
+  $('#kitout').scrollIntoView({ behavior: 'smooth' });
+}
+// Placa 100×100 mm: icono NFC + texto + QR de respaldo (apunta a la misma URL que el chip).
+function plaqueSvg(url) {
+  const q = qrcode(0, 'M'); q.addData(url); q.make();
+  const n = q.getModuleCount(), size = 30, cell = size / n; let rects = '';
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) rects += `<rect x="${(c * cell).toFixed(3)}" y="${(r * cell).toFixed(3)}" width="${(cell + .01).toFixed(3)}" height="${(cell + .01).toFixed(3)}"/>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="100mm" viewBox="0 0 100 100">
+  <rect width="100" height="100" rx="8" fill="#d4ab7f"/>
+  <rect x="4" y="4" width="92" height="92" rx="6" fill="none" stroke="#3b2410" stroke-width=".4" stroke-dasharray="1.2 1.2" opacity=".5"/>
+  <g transform="translate(19 12)" fill="none" stroke="#3b2410" stroke-width="1.6" stroke-linecap="round">
+    <circle cx="11" cy="11" r="11"/><path d="M4.8 9.6a9 9 0 0 1 12.4 0"/><path d="M7.4 12.3a5.4 5.4 0 0 1 7.2 0"/><circle cx="11" cy="15.3" r=".9" fill="#3b2410"/></g>
+  <text x="30" y="43" font-family="Inter,Arial,sans-serif" font-size="5.6" font-weight="800" fill="#3b2410" text-anchor="middle" letter-spacing=".3">TAP FOR</text>
+  <text x="30" y="50" font-family="Inter,Arial,sans-serif" font-size="5.6" font-weight="800" fill="#3b2410" text-anchor="middle" letter-spacing=".3">WI-FI</text>
+  <text x="30" y="56" font-family="Inter,Arial,sans-serif" font-size="3.4" fill="#3b2410" text-anchor="middle">&amp; house guide</text>
+  <g transform="translate(58 14)"><rect x="-2" y="-2" width="34" height="34" rx="2" fill="#fff"/><g fill="#1b120a">${rects}</g></g>
+  <text x="73" y="52" font-family="Inter,Arial,sans-serif" font-size="3" fill="#3b2410" text-anchor="middle">or scan</text>
+  <line x1="12" y1="62" x2="88" y2="62" stroke="#3b2410" stroke-width=".3" opacity=".4"/>
+  <text x="50" y="74" font-family="Inter,Arial,sans-serif" font-size="2.9" fill="#3b2410" text-anchor="middle">Hold your phone on the Wi-Fi symbol · Handy aufs Symbol</text>
+  <text x="50" y="80" font-family="Inter,Arial,sans-serif" font-size="2.9" fill="#3b2410" text-anchor="middle">Acerca el móvil al símbolo · Téléphone sur le symbole</text>
+  <circle cx="50" cy="89" r="3.2" fill="none" stroke="#3b2410" stroke-width=".5"/><text x="50" y="90.2" font-family="Inter,Arial,sans-serif" font-size="2.4" font-weight="700" fill="#3b2410" text-anchor="middle">NFC</text>
+</svg>`;
+}
+async function renew() {
+  const ps = await TS.adminProperties(); const soon = Date.now() + 30 * 864e5;
+  $('#pane').innerHTML = `<h2 style="margin-top:0">Renovaciones</h2><p class="muted">Cuando un anfitrión te pague la renovación (${money(C.RENEWAL_PRICE)}/año), amplía su fecha aquí. En rojo: caducan en menos de 30 días.</p>
+    <table><thead><tr><th>Propiedad</th><th>Anfitrión</th><th>Activa hasta</th><th></th></tr></thead><tbody>
+    ${ps.map(p => { const d = p.paid_until ? Date.parse(p.paid_until) : 0; return `<tr><td><b>${esc(p.name)}</b></td><td><a href="mailto:${esc(p.owner_email)}?subject=${encodeURIComponent('Your guide renewal — ' + p.name)}">${esc(p.owner_email)}</a></td>
+      <td style="color:${d && d < soon ? 'var(--danger)' : 'inherit'};font-weight:600">${p.paid_until || '—'}</td><td><button class="btn small" data-id="${p.id}" data-d="${p.paid_until || ''}">+1 año</button></td></tr>`; }).join('')}</tbody></table>`;
+  document.querySelectorAll('[data-id]').forEach(b => b.onclick = async () => { const base = b.dataset.d && Date.parse(b.dataset.d) > Date.now() ? new Date(b.dataset.d) : new Date(); base.setFullYear(base.getFullYear() + 1); await TS.setPaidUntil(b.dataset.id, base.toISOString().slice(0, 10)); toast('Renovado ✓'); renew(); });
+}
+boot();
+</script>
+</body>
+</html>

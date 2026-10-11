@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Legal notice, privacy & terms</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>main{max-width:760px;margin:0 auto;padding:10px 16px 60px}h1{font-size:30px}h2{margin-top:36px}.note{background:#fff4e0;color:#5c3b06;border-radius:12px;padding:12px 14px;font-size:14px}</style>
+</head>
+<body>
+<div class="wrap"><header class="topbar"><a class="logo" href="./"><i>((·</i><span class="b">TapStay</span></a></header></div>
+<main>
+  <p class="note"><b>Template.</b> Review this text with an advisor before launch. It is a starting point, not legal advice.</p>
+  <h1>Legal notice</h1>
+  <p>This website is operated by <b class="sn"></b>, self-employed (autónomo), tax ID <b class="tx"></b>, address <span class="ad"></span>. Contact: <a class="em"></a>.</p>
+
+  <h2 id="privacy">Privacy policy</h2>
+  <p><b>Controller:</b> <span class="sn"></span> (contact above).</p>
+  <p><b>Customers & hosts.</b> When you order or create a host account we process your name, email, shipping address, optional company/VAT number, order details and the guide content you write. Purpose: to fulfil your order, provide the guide service, invoicing and customer support. Legal basis: performance of a contract (Art. 6(1)(b) GDPR) and legal obligations for invoicing (Art. 6(1)(c)). Invoices are kept for the period required by Spanish tax law; account data until you delete your account.</p>
+  <p><b>Guests who tap a tag.</b> We do not ask guests for any personal data and we do not use cookies or trackers on guest pages. For each tap we store only the tag code, the time and the browser language, to show hosts anonymous usage counts. We do not store IP addresses in our database.</p>
+  <p><b>Processors.</b> Hosting and database: Supabase (EU region) and our static web host; payments: PayPal (Europe) S.à r.l. et Cie, S.C.A. or your bank; optional order notifications: Formspree. Some of these providers may process data outside the EEA under Standard Contractual Clauses.</p>
+  <p><b>Your rights.</b> Access, rectification, erasure, restriction, portability and objection: write to <a class="em"></a>. You can also complain to the Spanish Data Protection Agency (www.aepd.es).</p>
+
+  <h2 id="terms">Terms of sale</h2>
+  <ul>
+    <li><b>Products.</b> NFC plaques and stickers, made to order, plus access to the online guide editor for 12 months per kit. Renewal is optional (<span class="rp"></span>/year per property). Without renewal, tags keep showing a basic Wi-Fi page.</li>
+    <li><b>Prices & payment.</b> Prices in EUR, including VAT where applicable. Payment by PayPal, bank transfer or Bizum. Orders are produced after payment is received.</li>
+    <li><b>Delivery.</b> Shipped within 3–5 working days after payment. Delivery times depend on the carrier. Orders outside the EU may be subject to import duties and taxes paid by the recipient.</li>
+    <li><b>Right of withdrawal (EU consumers).</b> 14 days from delivery, except for goods made to the consumer's specifications or clearly personalised (e.g. engraved with a property name), per Art. 103(c) of Spanish Consumer Law (TRLGDCU) / Art. 16(c) of Directive 2011/83/EU.</li>
+    <li><b>Legal guarantee.</b> Consumers in Spain have a 3-year legal guarantee for lack of conformity of new goods. Contact us with photos and we will replace faulty items.</li>
+    <li><b>Service.</b> We aim for continuous availability of guide pages but do not guarantee uninterrupted service. You are responsible for the content you publish in your guide (e.g. do not publish personal data of third parties).</li>
+    <li><b>Product safety.</b> Not a toy. Keep small stickers away from children under 3. Indoor use; avoid direct sunlight and heat above 60 °C. Manufacturer: see legal notice above.</li>
+    <li><b>Disputes.</b> Spanish law applies, without prejudice to mandatory consumer protections of your country of residence. EU online dispute resolution: ec.europa.eu/consumers/odr.</li>
+  </ul>
+</main>
+<script src="config.js"></script>
+<script>
+const C = window.APP_CONFIG; const q = (s, f) => document.querySelectorAll(s).forEach(f);
+q('.b', e => e.textContent = C.BRAND); q('.sn', e => e.textContent = C.SELLER_NAME); q('.tx', e => e.textContent = C.SELLER_TAX_ID);
+q('.ad', e => e.textContent = C.SELLER_ADDRESS); q('.em', e => { e.textContent = C.CONTACT_EMAIL; e.href = 'mailto:' + C.CONTACT_EMAIL; });
+q('.rp', e => e.textContent = '€' + C.RENEWAL_PRICE);
+</script>
+</body>
+</html>

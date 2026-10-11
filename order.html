@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Order — TapStay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .layout{display:grid;grid-template-columns:1.3fr .9fr;gap:24px;align-items:start;padding:12px 0 60px}
+  @media (max-width:860px){.layout{grid-template-columns:1fr}}
+  .qty{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .qty input{width:72px;text-align:center}
+  .pay{display:grid;gap:10px;margin-top:6px}
+  .pay label{display:flex;gap:12px;align-items:flex-start;font-weight:500;border:1px solid var(--line);border-radius:12px;padding:12px;margin:0;cursor:pointer;background:var(--card)}
+  .pay input{width:auto;margin-top:4px}
+  .pay label:has(input:checked){border-color:var(--brand);box-shadow:0 0 0 1px var(--brand)}
+  .sum-row{display:flex;justify-content:space-between;padding:6px 0}
+  .total{font-size:22px;font-weight:800;border-top:1px solid var(--line);margin-top:8px;padding-top:12px}
+  .done{text-align:left}
+  .iban{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:17px;font-weight:700;background:var(--soft);padding:12px;border-radius:10px;word-break:break-all}
+  .sticky{position:sticky;top:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar"><a class="logo" href="./"><i>((·</i><span class="brand-name">TapStay</span></a><a href="./" class="muted">← Back</a></header>
+
+  <div id="form-view" class="layout">
+    <form id="f" class="card" novalidate>
+      <h1 style="margin:0 0 4px;font-size:28px">Your order</h1>
+      <p class="muted" style="margin:0 0 8px">Made to order · ships 3–5 working days after payment.</p>
+      <div id="items"></div>
+
+      <label for="finish">Plaque finish</label>
+      <select id="finish" name="finish"><option>Oak</option><option>Walnut</option><option>White acrylic</option><option>Black acrylic</option></select>
+
+      <div class="row">
+        <div><label for="name">Full name</label><input id="name" name="name" required autocomplete="name"></div>
+        <div><label for="email">Email</label><input id="email" name="email" type="email" required autocomplete="email"></div>
+      </div>
+      <label for="country">Ship to</label>
+      <select id="country" name="country"><option value="UK">United Kingdom</option><option value="EU">EU country (not Spain)</option><option value="ES">Spain</option><option value="US">United States</option><option value="OTHER">Other</option></select>
+      <label for="address">Shipping address</label>
+      <textarea id="address" name="address" required autocomplete="street-address" placeholder="Street, number, postcode, city, country"></textarea>
+      <label for="vat">Company & VAT number <span class="muted">(optional, for an invoice)</span></label>
+      <input id="vat" name="vat" placeholder="e.g. Seaside Lets Ltd · GB123456789">
+
+      <label>Payment method</label>
+      <div class="pay" id="pay"></div>
+
+      <label style="display:flex;gap:10px;font-weight:500;align-items:flex-start"><input type="checkbox" id="agree" style="width:auto;margin-top:5px" required> <span>I accept the <a href="legal.html#terms" target="_blank">terms</a> and <a href="legal.html" target="_blank">privacy policy</a>. Personalised items can't be returned unless faulty.</span></label>
+      <p id="err" style="color:var(--danger);font-weight:600;min-height:1em"></p>
+      <button class="btn" type="submit" style="width:100%">Place order</button>
+    </form>
+
+    <aside class="card sticky">
+      <h3 style="margin-top:0">Summary</h3>
+      <div id="sum"></div>
+      <p class="muted" style="font-size:13px;margin-bottom:0">Prices include Spanish VAT where applicable. 12 months of the editable guide included; then <span class="p-renew"></span>/year (optional).</p>
+    </aside>
+  </div>
+
+  <div id="done-view" class="card narrow done" style="display:none;margin:20px auto 60px"></div>
+</div>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const { C, $, esc, money } = TS;
+TS.demoBanner();
+document.querySelectorAll('.brand-name').forEach(e => e.textContent = C.BRAND);
+$('.p-renew').textContent = money(C.RENEWAL_PRICE);
+const pre = new URLSearchParams(location.search).get('p') || 'starter';
+$('#items').innerHTML = C.PRODUCTS.map(p => `
+  <div class="qty"><div><b>${esc(p.name)}</b> · ${money(p.price)}<br><span class="muted" style="font-size:14px">${esc(p.desc)}</span></div>
+  <input type="number" min="0" max="50" value="${p.id===pre?1:0}" data-id="${p.id}" aria-label="Quantity ${esc(p.name)}"></div>`).join('');
+
+function methods() {
+  const country = $('#country').value, out = [];
+  out.push(['paypal', '💳 PayPal or card', 'Pay with your PayPal account or any debit/credit card (no account needed).']);
+  if (country === 'ES' || country === 'EU') out.push(['transfer', '🏦 SEPA bank transfer', 'No fees. We ship when the transfer arrives (usually 1 working day).']);
+  else out.push(['transfer', '🏦 International bank transfer', 'Your bank may charge fees. PayPal is usually easier from the UK/US.']);
+  if (country === 'ES' && C.BIZUM_PHONE) out.push(['bizum', '📱 Bizum', 'Instant, only for Spanish bank accounts.']);
+  if (C.SHOPIFY_CHECKOUT_URL) out.push(['shopify', '🛒 Card checkout (Shopify)', 'Apple Pay, Google Pay and cards via our secure checkout.']);
+  const cur = ($('input[name=pay]:checked') || {}).value || 'paypal';
+  $('#pay').innerHTML = out.map(([v, t, d]) => `<label><input type="radio" name="pay" value="${v}" ${v===cur?'checked':''}><span><b>${t}</b><br><span class="muted" style="font-size:14px">${d}</span></span></label>`).join('');
+  if (!$('input[name=pay]:checked')) $('input[name=pay]').checked = true;
+}
+function calc() {
+  const items = [...document.querySelectorAll('#items input')].map(i => ({ id: i.dataset.id, qty: Math.max(0, parseInt(i.value || 0, 10)) })).filter(i => i.qty > 0);
+  const sub = items.reduce((s, i) => s + C.PRODUCTS.find(p => p.id === i.id).price * i.qty, 0);
+  const ship = items.length ? (C.SHIPPING[$('#country').value] ?? C.SHIPPING.OTHER) : 0;
+  return { items, sub, ship, total: sub + ship };
+}
+function render() {
+  const o = calc();
+  $('#sum').innerHTML = o.items.map(i => { const p = C.PRODUCTS.find(x => x.id === i.id); return `<div class="sum-row"><span>${i.qty} × ${esc(p.name)}</span><span>${money(p.price * i.qty)}</span></div>`; }).join('') +
+    `<div class="sum-row muted"><span>Shipping</span><span>${money(o.ship)}</span></div><div class="sum-row total"><span>Total</span><span>${money(o.total)}</span></div>` +
+    ($('#country').value === 'US' ? '<p class="muted" style="font-size:13px">US orders: import duties may be charged on delivery.</p>' : '');
+}
+$('#country').addEventListener('change', () => { methods(); render(); });
+document.querySelectorAll('#items input').forEach(i => i.addEventListener('input', render));
+methods(); render();
+
+$('#f').addEventListener('submit', async (e) => {
+  e.preventDefault(); $('#err').textContent = '';
+  const o = calc();
+  if (!o.items.length) return $('#err').textContent = 'Choose at least one product.';
+  for (const id of ['name', 'email', 'address']) if (!$('#' + id).value.trim()) return $('#err').textContent = 'Please fill in name, email and address.';
+  if (!/^\S+@\S+\.\S+$/.test($('#email').value)) return $('#err').textContent = 'Please check your email address.';
+  if (!$('#agree').checked) return $('#err').textContent = 'Please accept the terms.';
+  const order = { name: $('#name').value.trim(), email: $('#email').value.trim(), country: $('#country').value, address: $('#address').value.trim(),
+    vat: $('#vat').value.trim(), finish: $('#finish').value, items: o.items, total: o.total, currency: C.CURRENCY, payment_method: $('input[name=pay]:checked').value };
+  const btn = e.submitter; btn.disabled = true; btn.textContent = 'Placing order…';
+  try {
+    const saved = await TS.createOrder(order);
+    if (C.ORDER_NOTIFY_ENDPOINT) fetch(C.ORDER_NOTIFY_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ _subject: 'New order ' + saved.ref, ...saved, items: JSON.stringify(saved.items) }) }).catch(() => {});
+    showDone(saved);
+  } catch (err) { $('#err').textContent = 'Something went wrong: ' + err.message; btn.disabled = false; btn.textContent = 'Place order'; }
+});
+
+function showDone(o) {
+  const amt = o.total.toFixed(2);
+  let how = '';
+  if (o.payment_method === 'paypal') {
+    const link = C.PAYPAL_ME ? `https://paypal.me/${encodeURIComponent(C.PAYPAL_ME)}/${amt}EUR` : '#';
+    how = `<p>Click the button and pay <b>${money(o.total)}</b>. Please write <b>${o.ref}</b> in the note.</p>
+      <p><a class="btn" href="${link}" target="_blank" rel="noopener">Pay ${money(o.total)} with PayPal or card</a></p>
+      <p class="muted" style="font-size:14px">On PayPal, choose “Pay with debit or credit card” if you don't have an account.${C.PAYPAL_ME ? '' : ' <b>(Seller: set PAYPAL_ME in config.js)</b>'}</p>`;
+  } else if (o.payment_method === 'transfer') {
+    how = `<p>Please transfer <b>${money(o.total)}</b> to:</p>
+      <div class="iban">${esc(C.IBAN)}</div>
+      <p>Account holder: <b>${esc(C.IBAN_HOLDER)}</b><br>Reference: <b>${o.ref}</b> (important)</p>
+      <p class="muted" style="font-size:14px">We'll email you as soon as the payment arrives and your kit is on its way.</p>`;
+  } else if (o.payment_method === 'bizum') {
+    how = `<p>Send <b>${money(o.total)}</b> by Bizum to <b>${esc(C.BIZUM_PHONE)}</b> with the concept <b>${o.ref}</b>.</p>`;
+  } else if (o.payment_method === 'shopify') {
+    how = `<p><a class="btn" href="${esc(C.SHOPIFY_CHECKOUT_URL)}" target="_blank" rel="noopener">Go to secure checkout</a></p><p class="muted">Use the same email so we can match your order ${o.ref}.</p>`;
+  }
+  $('#form-view').style.display = 'none';
+  const d = $('#done-view'); d.style.display = 'block';
+  d.innerHTML = `<span class="pill ok">Order received</span><h1 style="font-size:28px;margin:10px 0 4px">Thank you, ${esc(o.name.split(' ')[0])}!</h1>
+    <p class="muted">Order <b>${o.ref}</b> · ${money(o.total)}. A copy of these instructions will be emailed to ${esc(o.email)} within 24 hours.</p>
+    <h3>How to pay</h3>${how}
+    <h3>What happens next</h3><ol><li>We confirm your payment (usually same day).</li><li>Your kit is made and shipped in 3–5 working days.</li><li>Inside the box you'll find your kit code to activate your guide.</li></ol>
+    <p class="muted">Questions? <a href="mailto:${esc(C.CONTACT_EMAIL)}">${esc(C.CONTACT_EMAIL)}</a></p>`;
+  scrollTo(0, 0);
+}
+</script>
+</body>
+</html>
