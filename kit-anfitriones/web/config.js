@@ -6,25 +6,25 @@
 // probarla y hacer capturas. Para lanzarla, rellena los datos de Supabase.
 window.APP_CONFIG = {
   BRAND: "TocToc",                        // nombre provisional: compruébalo en OEPM/EUIPO antes de usarlo
-  CONTACT_EMAIL: "hola@ejemplo.es",       // tu email de contacto
-  CONTACT_WHATSAPP: "",                   // opcional, p. ej. "34600111222" (sin + ni espacios)
+  CONTACT_EMAIL: "oiier.drop@outlook.com",       // tu email de contacto
+  CONTACT_WHATSAPP: "34621025971",                   // opcional, p. ej. "34600111222" (sin + ni espacios)
   SELLER_NAME: "Tu Nombre Apellido",      // titular (aviso legal / facturas)
   SELLER_TAX_ID: "00000000X",             // tu NIF (el DNI con letra), una vez dado de alta en Hacienda
-  SELLER_ADDRESS: "Calle Ejemplo 1, 48000 Bilbao (Bizkaia)",
+  SELLER_ADDRESS: "Jado 3, 48950 Erandio (Bizkaia)",
 
   // Dirección DEFINITIVA de la web, acabada en "/". Es la que se graba en los chips:
   // decídela ANTES de grabar la primera etiqueta de un cliente (guía, día 12).
   // Vacío = usa la dirección desde la que abras la web (solo para pruebas).
-  SITE_URL: "",                           // p. ej. "https://toctoc.es/"
+  SITE_URL: "https://nfc-mu-five.vercel.app/", // cámbialo por tu dominio ANTES de grabar chips de clientes
 
   // --- Supabase (gratis) -> guía, día 4 ---
-  SUPABASE_URL: "",                       // p. ej. "https://abcd1234.supabase.co"
-  SUPABASE_ANON_KEY: "",                  // la clave "anon public"
+  SUPABASE_URL: "https://egjgzmhsfsbablalhxcr.supabase.co",                       // p. ej. "https://abcd1234.supabase.co"
+  SUPABASE_ANON_KEY: "sb_publishable_I0TYEuA1GcrzR3MsQZbyNg_kvyKeonh", // clave pública (publishable)
 
   // --- Cobros (sin Stripe) ---
-  BIZUM_PHONE: "",                        // tu móvil con Bizum, p. ej. "600 111 222"
-  IBAN: "ES00 0000 0000 0000 0000 0000",  // para transferencias
-  IBAN_HOLDER: "Tu Nombre Apellido",
+  BIZUM_PHONE: "621 025 971",                        // tu móvil con Bizum, p. ej. "600 111 222"
+  IBAN: "ES43 1583 0001 1990 8822 4231",  // para transferencias
+  IBAN_HOLDER: "Ainara Santamaria",
   PAYPAL_ME: "",                          // p. ej. "toctoc" -> paypal.me/toctoc (permite pagar con tarjeta)
   SHOPIFY_CHECKOUT_URL: "",               // opcional (fase 2): enlace de pago de Shopify Starter
   // Aviso por email de cada pedido (opcional, gratis hasta 50/mes): endpoint de formspree.io
