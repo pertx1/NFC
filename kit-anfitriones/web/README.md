@@ -23,13 +23,7 @@ Web estática (HTML + JS) con base de datos en Supabase. Sin Stripe: cobros por 
 
 **Ponerla en marcha:** sigue `../guia/guia-kit-anfitriones.pdf` (días 3 a 7 y anexo B).
 
-**Si ya tenías la base de datos creada** con la versión anterior, ejecuta esto en el SQL Editor de Supabase:
-
-```sql
-alter table public.properties add column if not exists license_number text, add column if not exists checkin_url text;
-alter table public.orders add column if not exists phone text, add column if not exists zone text, add column if not exists tracking text;
-alter publication supabase_realtime add table public.orders;
-```
+**Si ya tenías la base de datos creada** con una versión anterior, vuelve a pegar `supabase/schema.sql` entero y ejecútalo: se puede lanzar las veces que quieras, no borra datos y añade lo que falte.
 
 ## App de pedidos en el móvil
 1. Abre `https://TU-WEB/pedidos.html` en el móvil y entra con tu email de admin.

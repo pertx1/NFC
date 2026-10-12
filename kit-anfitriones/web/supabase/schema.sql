@@ -130,10 +130,14 @@ create policy "admin reads orders" on public.orders for select using (public.am_
 drop policy if exists "admin updates orders" on public.orders;
 create policy "admin updates orders" on public.orders for update using (public.am_i_admin());
 
+-- Si la base de datos venía de una versión anterior, añade las columnas nuevas (no falla si ya existen).
+alter table public.properties add column if not exists license_number text, add column if not exists checkin_url text;
+alter table public.orders add column if not exists phone text, add column if not exists zone text, add column if not exists tracking text;
+
 -- App de pedidos (pedidos.html): avisos en tiempo real. Realtime respeta RLS: solo el admin los recibe.
-do $ begin
+do $$ begin
   alter publication supabase_realtime add table public.orders;
-exception when duplicate_object then null; end $;
+exception when duplicate_object then null; end $$;
 
 -- ---------- Funciones públicas ----------
 -- Página del huésped: devuelve la guía de la etiqueta (sin datos del dueño).
