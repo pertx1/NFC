@@ -1,0 +1,13 @@
+{
+  "name": "TocToc · azulejo de portal",
+  "colors": {
+    "cobalt": "#1f3f9e", "cobaltDeep": "#142a6e", "cobaltInk": "#0d1b47", "cobaltSoft": "#e8edfb", "cobaltLine": "#c9d3f2",
+    "glaze": "#f6f8fd", "albero": "#e9b23a", "alberoInk": "#4a3200",
+    "ink": "#111a33", "muted": "#4f5b78", "line": "#dde3f1",
+    "ok": "#14713f", "warn": "#8a5300", "danger": "#b3261e"
+  },
+  "type": { "display": "Young Serif", "ui": "Figtree" },
+  "radius": { "card": 14, "field": 10, "button": 999 },
+  "motion": { "easeOut": "cubic-bezier(.23,1,.32,1)", "press": "scale(.97) 160ms" },
+  "signature": "Cenefa de azulejo (pattern SVG 30px) + demo en vivo editor→móvil en la portada"
+}

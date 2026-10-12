@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aviso legal, privacidad y condiciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Young+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  main{max-width:720px;margin:0 auto;padding:8px 20px 72px}
+  h1{font-size:clamp(30px,4vw,40px);margin:8px 0 16px}
+  h2{font-size:26px;margin:44px 0 10px}
+  main p,main li{max-width:68ch}
+  main li{margin:8px 0}
+  .note{background:var(--warn-soft);color:var(--warn);border-radius:12px;padding:12px 14px;font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap"><header class="topbar"><a class="logo" href="./"><span class="logo-mark"></span><span class="brand-name">TocToc</span></a><a class="muted" href="./">Volver</a></header></div>
+<main>
+  <p class="note"><b>Plantilla.</b> Revísala con tu asesor antes de publicar. Es un punto de partida, no asesoramiento legal.</p>
+  <h1>Aviso legal</h1>
+  <p>En cumplimiento de la Ley 34/2002 de Servicios de la Sociedad de la Información (LSSI), te informamos de que esta web pertenece a <b class="sn"></b>, autónomo/a, con NIF <b class="tx"></b> y domicilio en <span class="ad"></span>. Contacto: <a class="em"></a>.</p>
+
+  <h2 id="privacidad">Política de privacidad</h2>
+  <p><b>Responsable:</b> <span class="sn"></span> (datos arriba).</p>
+  <p><b>Clientes y anfitriones.</b> Cuando haces un pedido o creas tu cuenta tratamos tu nombre, email, teléfono, dirección de envío, NIF o CIF si pides factura, los datos del pedido y los textos que escribes en tu guía. Los usamos para gestionar el pedido y el envío, prestarte el servicio de guía, facturar y atenderte. Base legal: ejecución del contrato (art. 6.1.b RGPD) y obligaciones fiscales (art. 6.1.c). Las facturas se conservan el tiempo que exige la ley; los datos de la cuenta, hasta que la borres.</p>
+  <p><b>Huéspedes que tocan una etiqueta.</b> No pedimos ningún dato al huésped ni usamos cookies ni rastreadores en la guía. De cada toque solo guardamos el código de la etiqueta, la hora y el idioma del navegador, para mostrar al anfitrión estadísticas anónimas. No guardamos direcciones IP en nuestra base de datos.</p>
+  <p><b>Encargados del tratamiento.</b> Base de datos y alojamiento: Supabase (región UE) y el proveedor de la web; correo: Brevo; pagos: tu banco, Bizum o PayPal (Europe) S.à r.l. et Cie, S.C.A.; avisos de pedido: Formspree. Alguno puede tratar datos fuera del Espacio Económico Europeo con cláusulas contractuales tipo.</p>
+  <p><b>Tus derechos.</b> Puedes pedir acceso, rectificación, supresión, limitación, portabilidad u oposición escribiendo a <a class="em"></a>. También puedes reclamar ante la Agencia Española de Protección de Datos (www.aepd.es).</p>
+
+  <h2 id="condiciones">Condiciones de venta</h2>
+  <ul>
+    <li><b>Producto.</b> Azulejo y pegatinas NFC fabricados bajo pedido, más acceso al editor de la guía durante 12 meses por kit. La renovación es opcional (<span class="rp"></span> al año por piso). Sin renovar, las etiquetas siguen mostrando una página básica con el wifi.</li>
+    <li><b>Precios y pago.</b> Precios en euros con IVA incluido. Pago por Bizum, transferencia o tarjeta mediante PayPal. Fabricamos cuando recibimos el pago.</li>
+    <li><b>Envío.</b> A península y Baleares, en 2 o 3 días laborables desde el pago, más el plazo del transportista. Canarias, Ceuta y Melilla: consulta previa, porque el envío pasa por aduana y el destinatario paga el IGIC o el IPSI y la gestión del DUA.</li>
+    <li><b>Desistimiento.</b> Los consumidores tienen 14 días naturales desde la entrega para desistir, salvo en productos confeccionados según sus especificaciones o claramente personalizados (por ejemplo, con el nombre del piso), conforme al art. 103.c del Texto Refundido de la Ley General para la Defensa de los Consumidores y Usuarios.</li>
+    <li><b>Garantía.</b> Tienes 3 años de garantía legal por falta de conformidad. Escríbenos con una foto y te reponemos la pieza defectuosa.</li>
+    <li><b>Servicio de guía.</b> Procuramos que esté siempre disponible, pero no garantizamos un servicio ininterrumpido. Tú respondes del contenido que publicas en tu guía; no publiques datos personales de terceros.</li>
+    <li><b>Seguridad del producto.</b> No es un juguete. Mantén las pegatinas lejos de menores de 3 años. Para interior; evita el sol directo y temperaturas por encima de 60 °C. Fabricante: el indicado en el aviso legal.</li>
+    <li><b>Ley aplicable.</b> Ley española. Para consumidores, son competentes los juzgados de su domicilio.</li>
+  </ul>
+</main>
+<script src="config.js"></script>
+<script src="assets/icons.js"></script>
+<script>
+const C = window.APP_CONFIG; const q = (s, f) => document.querySelectorAll(s).forEach(f);
+q('.brand-name', e => e.textContent = C.BRAND); q('.logo-mark', e => e.innerHTML = TSI.logo);
+q('.sn', e => e.textContent = C.SELLER_NAME); q('.tx', e => e.textContent = C.SELLER_TAX_ID);
+q('.ad', e => e.textContent = C.SELLER_ADDRESS); q('.em', e => { e.textContent = C.CONTACT_EMAIL; e.href = 'mailto:' + C.CONTACT_EMAIL; });
+q('.rp', e => e.textContent = C.RENEWAL_PRICE + ' €');
+</script>
+</body>
+</html>

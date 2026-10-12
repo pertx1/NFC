@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Panel de vendedor · TocToc</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Young+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .tabs{display:flex;gap:6px;margin:4px 0 18px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+  .tabs button{border:0;background:transparent;padding:12px 14px;font:600 15px var(--ui);cursor:pointer;color:var(--muted);display:inline-flex;gap:8px;align-items:center;border-bottom:2.5px solid transparent;margin-bottom:-1px}
+  .tabs button[aria-selected="true"]{color:var(--cobalt-deep);border-bottom-color:var(--cobalt)}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+  @media (max-width:760px){.kpis{grid-template-columns:1fr 1fr}}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
+  .kpi b{display:block;font-family:var(--display);font-weight:400;font-size:30px;color:var(--cobalt-ink);line-height:1.15}
+  .pane{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:22px;overflow-x:auto}
+  .urls{font-family:ui-monospace,Consolas,monospace;font-size:13px;background:var(--glaze);border:1px solid var(--line);border-radius:10px;padding:12px;white-space:pre-wrap;word-break:break-all;margin:8px 0}
+  .kitbox{margin-top:18px;border:1.5px solid var(--cobalt-line);border-radius:16px;padding:20px;background:var(--glaze)}
+  .kitbox h3{font-size:22px;margin:0 0 8px}
+  .kitbox h4{margin:18px 0 6px;font-size:15px;color:var(--cobalt-ink)}
+  .kitgrid{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start}
+  @media (max-width:760px){.kitgrid{grid-template-columns:1fr}}
+  .kitcard{width:105mm;max-width:100%;min-height:74mm;border:1px dashed #9aa4c2;border-radius:6px;padding:7mm;background:#fff;color:var(--ink);font-size:10.5pt}
+  .kitcard h3{font-size:16pt;margin:0 0 2mm}
+  .kitcard .code{font:700 19pt ui-monospace,Consolas,monospace;letter-spacing:.06em;margin:3mm 0;color:var(--cobalt-ink)}
+  .plq{width:220px;border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+  @media print{body *{visibility:hidden}.printable,.printable *{visibility:visible}.printable{position:absolute;left:0;top:0}.demo-banner{display:none}}
+  td .btn{margin:2px 4px 2px 0}
+  .who{font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar"><a class="logo" href="./"><span class="logo-mark"></span><span>Panel de vendedor</span></a><div id="who" class="muted" style="font-size:14px"></div></header>
+  <div id="view"></div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="assets/icons.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const { C, $, esc, money } = TS;
+TS.demoBanner(); TS.brand();
+let tab = 'orders';
+const toast = (m) => { const t = $('#toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); };
+const ST = { pending: ['Pendiente de pago', 'warn'], paid: ['Pagado · por enviar', 'ok'], shipped: ['Enviado', ''], cancelled: ['Cancelado', 'danger'] };
+const PM = { bizum: 'Bizum', transfer: 'Transferencia', paypal: 'PayPal / tarjeta', shopify: 'Shopify' };
+
+async function boot() {
+  const u = await TS.currentUser();
+  if (!u || !(await TS.isAdmin())) {
+    $('#view').innerHTML = `<div class="card" style="max-width:440px;margin:48px auto"><h1 style="font-size:28px;margin:0 0 6px">Acceso de vendedor</h1><p class="muted">${TS.DEMO ? 'Demo: usa <b>admin@demo.test</b>.' : 'Entra con el email que pusiste en la tabla <code>admins</code>.'}</p>
+      <form id="lf"><label for="em">Email</label><input id="em" type="email" required value="${TS.DEMO ? 'admin@demo.test' : ''}"><p id="lm" class="muted" role="status"></p><button class="btn" style="width:100%">Entrar</button></form></div>`;
+    $('#lf').onsubmit = async (e) => { e.preventDefault(); const r = await TS.login($('#em').value); if (r.demo) boot(); else $('#lm').textContent = 'Revisa tu email y pulsa el enlace.'; };
+    return;
+  }
+  $('#who').innerHTML = `${esc(u.email)} · <a href="#" id="lo">Salir</a>`;
+  $('#lo').onclick = async (e) => { e.preventDefault(); await TS.logout(); location.reload(); };
+  render();
+}
+async function render() {
+  $('#view').innerHTML = `<div class="tabs" role="tablist">${[['orders', 'box', 'Pedidos'], ['kits', 'tag', 'Kits y etiquetas'], ['renew', 'euro', 'Renovaciones']].map(([k, ic, t]) => `<button role="tab" data-t="${k}" aria-selected="${k === tab}">${TSI.svg(ic)}${t}</button>`).join('')}</div><div id="pane"></div>`;
+  document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { tab = b.dataset.t; render(); });
+  await ({ orders, kits, renew })[tab]();
+}
+const prodName = (id) => (C.PRODUCTS.find(p => p.id === id) || {}).name || id;
+function tagCount(o) { return (o.items || []).reduce((s, i) => s + i.qty * ({ starter: 4, stickers: 5, pro5: 20 }[i.id] || 0), 0) || 4; }
+
+async function orders() {
+  const os = await TS.listOrders();
+  const paid = os.filter(o => o.status === 'paid' || o.status === 'shipped');
+  $('#pane').innerHTML = `<div class="kpis">
+      <div class="kpi"><span class="muted">Pedidos</span><b>${os.length}</b></div>
+      <div class="kpi"><span class="muted">Pendientes de pago</span><b>${os.filter(o => o.status === 'pending').length}</b></div>
+      <div class="kpi"><span class="muted">Por enviar</span><b>${os.filter(o => o.status === 'paid').length}</b></div>
+      <div class="kpi"><span class="muted">Cobrado (IVA incl.)</span><b>${money(paid.reduce((s, o) => s + Number(o.total), 0))}</b></div></div>
+    <div class="pane">${os.length ? `<table><thead><tr><th>Pedido</th><th>Cliente</th><th>Productos</th><th>Importe</th><th>Estado</th><th></th></tr></thead><tbody>
+    ${os.map(o => `<tr><td><b>${esc(o.ref)}</b><br><span class="who">${new Date(o.created_at).toLocaleDateString('es-ES')}</span></td>
+      <td>${esc(o.name)}<br><a href="mailto:${esc(o.email)}?subject=${encodeURIComponent('Tu pedido ' + o.ref)}">${esc(o.email)}</a>${o.phone ? `<br><span class="who">${esc(o.phone)}</span>` : ''}<br><span class="who">${esc((C.SHIPPING_LABELS || {})[o.zone] || o.zone || '')} · ${esc(o.address)}</span>${o.vat ? `<br><span class="who">Factura: ${esc(o.vat)}</span>` : ''}</td>
+      <td>${(o.items || []).map(i => `${i.qty} × ${esc(prodName(i.id))}`).join('<br>')}<br><span class="who">${esc(o.finish || '')}</span></td>
+      <td><b>${money(o.total)}</b><br><span class="who">${PM[o.payment_method] || esc(o.payment_method)}</span></td>
+      <td><span class="pill ${ST[o.status][1]}">${ST[o.status][0]}</span></td>
+      <td style="white-space:nowrap">${o.status === 'pending' ? `<button class="btn small" data-a="paid" data-r="${o.ref}">Marcar pagado</button><button class="btn small ghost" data-a="cancelled" data-r="${o.ref}">Cancelar</button>` : ''}
+          ${o.status === 'paid' ? `<button class="btn small" data-k="${o.ref}" data-n="${tagCount(o)}">Crear kit (${tagCount(o)} etiquetas)</button><button class="btn small ghost" data-a="shipped" data-r="${o.ref}">Marcar enviado</button>` : ''}</td></tr>`).join('')}
+    </tbody></table>` : '<p class="muted">Aún no hay pedidos. Cuando alguien compre, aparecerá aquí.</p>'}</div>`;
+  document.querySelectorAll('[data-a]').forEach(b => b.onclick = async () => { if (b.dataset.a === 'cancelled' && !confirm('¿Cancelar el pedido ' + b.dataset.r + '?')) return; await TS.setOrderStatus(b.dataset.r, b.dataset.a); toast('Actualizado'); orders(); });
+  document.querySelectorAll('[data-k]').forEach(b => b.onclick = async () => { const r = await TS.createKit(b.dataset.k, +b.dataset.n); tab = 'kits'; await render(); showKit(r.kit, r.tags); });
+}
+async function kits() {
+  const ks = await TS.listKits();
+  $('#pane').innerHTML = `<div class="pane"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:end"><div><h1 style="font-size:26px;margin:0">Kits</h1><p class="muted" style="margin:4px 0 0">Cada kit es un código de activación más sus etiquetas. Graba cada URL en su etiqueta con NFC Tools.</p></div>
+    <div style="display:flex;gap:8px;align-items:end"><div><label for="nn" style="margin:0 0 4px">Etiquetas</label><input id="nn" type="number" value="4" min="1" max="50" style="width:90px"></div><button class="btn small" id="nk">Crear kit suelto</button></div></div>
+    <div id="kitout"></div>
+    <table style="margin-top:16px"><thead><tr><th>Kit</th><th>Pedido</th><th>Etiquetas</th><th>Estado</th><th></th></tr></thead><tbody>
+    ${ks.map(k => `<tr><td><b>${esc(k.code)}</b></td><td>${esc(k.order_ref || '—')}</td><td>${(k.tags || []).length}</td><td>${k.claimed_by ? '<span class="pill ok">Activado</span>' : '<span class="pill warn">Sin activar</span>'}</td><td><button class="btn small ghost" data-s="${esc(k.code)}">Ver e imprimir</button></td></tr>`).join('')}</tbody></table></div>`;
+  $('#nk').onclick = async () => { const r = await TS.createKit(null, +$('#nn').value || 4); await kits(); showKit(r.kit, r.tags); };
+  document.querySelectorAll('[data-s]').forEach(b => b.onclick = () => { const k = ks.find(x => x.code === b.dataset.s); showKit(k, k.tags || []); });
+}
+function showKit(kit, tags) {
+  const panelUrl = TS.baseUrl() + 'panel.html';
+  const url0 = tags[0] ? TS.tagUrl(tags[0].code) : TS.baseUrl();
+  $('#kitout').innerHTML = `<div class="kitbox">
+    <h3>Kit ${esc(kit.code)}</h3>
+    ${TS.C.SITE_URL ? '' : '<p class="pill warn" style="margin:0 0 8px">Ojo: SITE_URL está vacío. No grabes chips de clientes con estas URLs.</p>'}
+    <h4>1. Graba estas URLs, una por etiqueta y en este orden (la primera va en el azulejo)</h4>
+    <div class="urls">${tags.map((t, i) => `${i + 1}. ${esc(t.label || '')}  →  ${esc(TS.tagUrl(t.code))}`).join('\n')}</div>
+    <button class="btn small ghost" id="cpu">${TSI.svg('copy')}Copiar URLs</button>
+    <div class="kitgrid" style="margin-top:6px">
+      <div><h4>2. Tarjeta de activación (va en la caja)</h4>
+        <div class="printable"><div class="kitcard">
+          <h3>¡Bienvenido a ${esc(C.BRAND)}!</h3><div>Activa tu guía en 3 minutos:</div>
+          <ol style="padding-left:18px;margin:2mm 0"><li>Entra en <b>${esc(panelUrl.replace(/^https?:\/\//, ''))}</b></li><li>Escribe tu email</li><li>Introduce este código:</li></ol>
+          <div class="code">${esc(kit.code)}</div>
+          <div style="display:flex;gap:4mm;align-items:center"><div style="width:22mm;flex:none">${TS.qrSvg(panelUrl)}</div><small>Escanea para abrir tu panel. ¿Dudas? ${esc(C.CONTACT_EMAIL)}</small></div>
+        </div></div>
+        <p><button class="btn small" onclick="print()">Imprimir tarjeta</button></p></div>
+      <div><h4>3. Diseño del azulejo para el taller (10 × 10 cm, con el QR de este kit)</h4>
+        <div class="plq">${plaqueSvg(url0).replace('width="100mm" height="100mm"', 'width="100%" style="display:block"')}</div>
+        <p><button class="btn small ghost" id="dlp">Descargar azulejo (SVG)</button></p></div>
+    </div></div>`;
+  $('#dlp').onclick = () => { const blob = new Blob([plaqueSvg(url0)], { type: 'image/svg+xml' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `azulejo-${kit.code}.svg`; a.click(); };
+  $('#cpu').onclick = () => navigator.clipboard.writeText(tags.map(t => TS.tagUrl(t.code)).join('\n')).then(() => toast('URLs copiadas'));
+  $('#kitout').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+// Azulejo 100×100 mm: cenefa cobalto, onda NFC y QR de respaldo (misma URL que el chip).
+function plaqueSvg(url) {
+  const q = qrcode(0, 'M'); q.addData(url); q.make();
+  const n = q.getModuleCount(), size = 24, cell = size / n; let rects = '';
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) rects += `<rect x="${(c * cell).toFixed(3)}" y="${(r * cell).toFixed(3)}" width="${(cell + .01).toFixed(3)}" height="${(cell + .01).toFixed(3)}"/>`;
+  const motif = (x, y) => `<g transform="translate(${x} ${y})"><path d="M0 2.5A2.5 2.5 0 0 0 2.5 0M7.5 0A2.5 2.5 0 0 0 10 2.5M10 7.5A2.5 2.5 0 0 0 7.5 10M2.5 10A2.5 2.5 0 0 0 0 7.5" fill="none" stroke="#fff" stroke-width=".55"/><path d="M5 2 8 5 5 8 2 5Z" fill="none" stroke="#fff" stroke-width=".55"/><circle cx="5" cy="5" r=".8" fill="#e9b23a"/></g>`;
+  let band = '';
+  for (let i = 0; i < 10; i++) { band += motif(i * 10, 0) + motif(i * 10, 90); }
+  for (let i = 1; i < 9; i++) { band += motif(0, i * 10) + motif(90, i * 10); }
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="100mm" viewBox="0 0 100 100">
+  <rect width="100" height="100" rx="3" fill="#fbfcff"/>
+  <path d="M0 0h100v10H0zM0 90h100v10H0zM0 10h10v80H0zM90 10h10v80H90z" fill="#1f3f9e"/>${band}
+  <g fill="none" stroke="#1f3f9e" stroke-width="2.6" stroke-linecap="round"><path d="M18 38a19 19 0 0 1 27 0"/><path d="M23.5 44a11 11 0 0 1 16 0"/></g>
+  <circle cx="31.5" cy="50.5" r="2.6" fill="#e9b23a"/>
+  <text x="31.5" y="64" font-family="Young Serif,Georgia,serif" font-size="8" fill="#0d1b47" text-anchor="middle">Toca aquí</text>
+  <text x="31.5" y="71" font-family="Figtree,Arial,sans-serif" font-size="3.6" fill="#4f5b78" text-anchor="middle">wifi · guía de la casa</text>
+  <g transform="translate(58 24)"><rect x="-2" y="-2" width="28" height="28" rx="1.5" fill="#fff" stroke="#c9d3f2" stroke-width=".4"/><g fill="#0d1b47">${rects}</g></g>
+  <text x="70" y="59" font-family="Figtree,Arial,sans-serif" font-size="3.4" fill="#4f5b78" text-anchor="middle">o escanea</text>
+  <text x="50" y="81.5" font-family="Figtree,Arial,sans-serif" font-size="3" fill="#4f5b78" text-anchor="middle">Tap · Toucher · Tippen · Toccare</text>
+</svg>`;
+}
+async function renew() {
+  const ps = await TS.adminProperties(); const soon = Date.now() + 30 * 864e5;
+  $('#pane').innerHTML = `<div class="pane"><h1 style="font-size:26px;margin:0 0 4px">Renovaciones</h1><p class="muted" style="margin:0 0 14px">Cuando un anfitrión pague la renovación (${money(C.RENEWAL_PRICE)} al año), amplía su fecha aquí. En rojo, las que caducan en menos de 30 días.</p>
+    ${ps.length ? `<table><thead><tr><th>Piso</th><th>Anfitrión</th><th>Activa hasta</th><th></th></tr></thead><tbody>
+    ${ps.map(p => { const d = p.paid_until ? Date.parse(p.paid_until) : 0; return `<tr><td><b>${esc(p.name)}</b></td><td><a href="mailto:${esc(p.owner_email)}?subject=${encodeURIComponent('Renovación de tu guía · ' + p.name)}">${esc(p.owner_email)}</a></td>
+      <td style="color:${d && d < soon ? 'var(--danger)' : 'inherit'};font-weight:600">${p.paid_until ? new Date(p.paid_until).toLocaleDateString('es-ES') : '—'}</td><td><button class="btn small" data-id="${p.id}" data-d="${p.paid_until || ''}">Añadir 1 año</button></td></tr>`; }).join('')}</tbody></table>` : '<p class="muted">Aún no hay pisos activados.</p>'}</div>`;
+  document.querySelectorAll('[data-id]').forEach(b => b.onclick = async () => { const base = b.dataset.d && Date.parse(b.dataset.d) > Date.now() ? new Date(b.dataset.d) : new Date(); base.setFullYear(base.getFullYear() + 1); await TS.setPaidUntil(b.dataset.id, base.toISOString().slice(0, 10)); toast('Renovado un año'); renew(); });
+}
+boot();
+</script>
+</body>
+</html>

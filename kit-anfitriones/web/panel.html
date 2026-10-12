@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Mi guía · TocToc</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Young+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .shell{display:grid;grid-template-columns:240px 1fr;gap:24px;padding:4px 0 72px;align-items:start}
+  @media (max-width:860px){.shell{grid-template-columns:1fr}}
+  .side{position:sticky;top:12px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:12px}
+  @media (max-width:860px){.side{position:static}}
+  .side .prop{padding:8px 10px 12px;border-bottom:1px solid var(--line);margin-bottom:8px}
+  .side .prop b{font-family:var(--display);font-weight:400;font-size:18px;color:var(--cobalt-ink);display:block;line-height:1.2}
+  .side nav{display:grid;gap:2px}
+  .side nav a{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;text-decoration:none;color:var(--ink);font-weight:600;font-size:15px;transition:background-color 160ms ease}
+  .side nav a .icon{color:var(--muted)}
+  .side nav a:hover{background:var(--glaze)}
+  .side nav a[aria-current="page"]{background:var(--cobalt-soft);color:var(--cobalt-deep)}
+  .side nav a[aria-current="page"] .icon{color:var(--cobalt)}
+  @media (max-width:860px){.side nav{grid-template-columns:repeat(4,1fr)}.side nav a{flex-direction:column;gap:4px;font-size:12.5px;text-align:center}}
+  .side .status{font-size:13px;color:var(--muted);padding:12px 10px 4px;border-top:1px solid var(--line);margin-top:8px}
+  .pane{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:26px}
+  @media (max-width:520px){.pane{padding:18px}}
+  .pane h1{font-size:28px;margin:0 0 4px}
+  .lt{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 4px}
+  .lt button{border:1.5px solid var(--line);background:#fff;border-radius:99px;padding:6px 13px;font:600 13.5px var(--ui);cursor:pointer;color:var(--cobalt-ink);transition:background-color 160ms ease,transform 160ms var(--ease-out)}
+  .lt button:active{transform:scale(.96)}
+  .lt button[aria-pressed="true"]{background:var(--cobalt);color:#fff;border-color:var(--cobalt)}
+  .group{border-top:1px solid var(--line);margin-top:24px;padding-top:6px}
+  .group h2{font-size:20px;margin:16px 0 0}
+  .sec{border:1.5px solid var(--line);border-radius:14px;padding:16px;margin-top:12px;background:var(--glaze)}
+  .sec .top{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:end}
+  .sec .top label{margin-top:0}
+  .tools{display:flex;gap:6px}
+  .iconbtn{width:40px;height:44px;border:1.5px solid var(--line);background:#fff;border-radius:10px;cursor:pointer;color:var(--cobalt-ink);display:inline-flex;align-items:center;justify-content:center;transition:background-color 160ms ease,transform 160ms var(--ease-out)}
+  .iconbtn:hover{background:var(--cobalt-soft)}
+  .iconbtn:active{transform:scale(.94)}
+  .pick{position:relative}
+  .pick > button{width:52px;height:44px;border:1.5px solid var(--line);background:#fff;border-radius:10px;cursor:pointer;color:var(--cobalt);display:inline-flex;align-items:center;justify-content:center}
+  .pick > button .icon{width:22px;height:22px}
+  .palette{position:absolute;z-index:5;top:50px;left:0;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:8px;display:grid;grid-template-columns:repeat(5,40px);gap:4px;transform-origin:top left;transition:opacity 150ms var(--ease-out),transform 150ms var(--ease-out)}
+  .palette[hidden]{display:grid;opacity:0;transform:scale(.96);pointer-events:none;visibility:hidden}
+  .palette button{width:40px;height:40px;border:0;border-radius:9px;background:transparent;cursor:pointer;color:var(--cobalt-ink);display:flex;align-items:center;justify-content:center}
+  .palette button:hover,.palette button[aria-pressed="true"]{background:var(--cobalt-soft);color:var(--cobalt)}
+  .savebar{position:sticky;bottom:0;background:linear-gradient(to top,#fff 70%,rgba(255,255,255,0));padding:18px 0 4px;display:flex;gap:10px;justify-content:flex-end;align-items:center;margin-top:18px}
+  .savebar .state{margin-right:auto;font-size:14px;color:var(--muted)}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}
+  @media (max-width:640px){.stats{grid-template-columns:1fr}}
+  .stat{background:var(--glaze);border-radius:14px;padding:16px}
+  .stat b{display:block;font-family:var(--display);font-weight:400;font-size:32px;color:var(--cobalt-ink);line-height:1.1}
+  .bar{height:8px;border-radius:99px;background:var(--cobalt-soft);overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;background:var(--cobalt)}
+  code.u{font-size:12px;word-break:break-all;color:var(--muted)}
+  .chk{display:flex;gap:8px 18px;flex-wrap:wrap}.chk label{display:flex;gap:7px;align-items:center;font-weight:500;margin:0}
+  .login{max-width:440px;margin:48px auto}
+  .login h1{font-size:30px;margin:0 0 6px}
+  .qrmini{width:150px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:6px}
+  table td .tsel{min-width:180px}
+  @media (max-width:640px){table thead{display:none}table tr{display:grid;gap:6px;padding:12px 0;border-bottom:1px solid var(--line)}table td{border:0;padding:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar"><a class="logo" href="./"><span class="logo-mark"></span><span class="brand-name">TocToc</span></a><div id="who" class="muted" style="font-size:14px"></div></header>
+  <div id="view"></div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="assets/icons.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const { C, $, esc } = TS;
+TS.demoBanner(); TS.brand();
+const LANGS = { es: 'Español', en: 'English', fr: 'Français', de: 'Deutsch', it: 'Italiano', nl: 'Nederlands', pt: 'Português' };
+const TEMPLATE = [
+  { key: 'checkin', icon: 'key', title: { es: 'Llegada y llaves' }, body: { es: 'Hora de llegada, dónde están las llaves o el código de la caja, piso y puerta.' } },
+  { key: 'cocina', icon: 'kitchen', title: { es: 'Cocina y electrodomésticos' }, body: { es: 'Vitrocerámica, horno, cafetera, lavavajillas, lavadora…' } },
+  { key: 'clima', icon: 'thermo', title: { es: 'Aire acondicionado y calefacción' }, body: { es: 'Dónde está el mando y cómo se usa.' } },
+  { key: 'normas', icon: 'rules', title: { es: 'Normas de la casa' }, body: { es: 'Fumar, mascotas, horario de silencio, máximo de personas, basura y reciclaje.' } },
+  { key: 'zona', icon: 'pin', title: { es: 'Recomendaciones' }, body: { es: 'Supermercado, desayunos, restaurantes, playa, transporte y aparcamiento.' } },
+  { key: 'salida', icon: 'door', title: { es: 'Salida' }, body: { es: 'Hora de salida y qué hacer antes de irse.' } }
+];
+let user, props = [], cur = null, tags = [], stats = {}, tab = 'guide', elang = 'es', dirty = false;
+const toast = (m) => { const t = $('#toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); };
+addEventListener('beforeunload', (e) => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+async function boot() {
+  user = await TS.currentUser();
+  if (!user) return loginView();
+  $('#who').innerHTML = `${esc(user.email)} · <a href="#" id="lo">Salir</a>`;
+  $('#lo').onclick = async (e) => { e.preventDefault(); await TS.logout(); location.reload(); };
+  [props, tags, stats] = await Promise.all([TS.myProperties(), TS.myTags(), TS.tapStats(30)]);
+  if (!props.length && !tags.length) return activateView();
+  cur = (cur && props.find(p => p.id === cur.id)) || props[0] || newProperty();
+  shell();
+}
+function newProperty() { return { name: 'Mi piso', slug: '', languages: ['es', 'en'], welcome: { es: '¡Bienvenidos! Aquí tenéis todo lo que necesitáis para vuestra estancia.', en: 'Welcome! Everything you need for your stay is below.' }, wifi_ssid: '', wifi_password: '', wifi_security: 'WPA', wifi_hidden: false, contact: '', license_number: '', checkin_url: '', sections: JSON.parse(JSON.stringify(TEMPLATE)) }; }
+
+function loginView() {
+  $('#view').innerHTML = `<div class="card login"><h1>Entra en tu guía</h1>
+    <p class="muted">${TS.DEMO ? 'Demo: usa <b>host@demo.test</b> (o <b>admin@demo.test</b> para el panel de vendedor).' : 'Te mandamos un enlace al email. Sin contraseñas.'}</p>
+    <form id="lf"><label for="em">Email</label><input id="em" type="email" required autocomplete="email" value="${TS.DEMO ? 'host@demo.test' : ''}"><p id="lm" class="muted" role="status"></p><button class="btn" style="width:100%">Continuar</button></form></div>`;
+  $('#lf').onsubmit = async (e) => {
+    e.preventDefault(); const b = e.submitter; b.disabled = true; b.textContent = 'Un momento…';
+    try { const r = await TS.login($('#em').value.trim()); if (r.demo) { if (await TS.isAdmin()) location.href = 'admin.html'; else boot(); } else { $('#lm').textContent = 'Revisa tu correo y pulsa el enlace para entrar. Mira también en spam.'; b.textContent = 'Enlace enviado'; } }
+    catch (err) { $('#lm').textContent = 'No hemos podido enviar el enlace: ' + err.message; b.disabled = false; b.textContent = 'Continuar'; }
+  };
+}
+function activateView() {
+  $('#view').innerHTML = `<div class="card login"><h1>Activa tu kit</h1>
+    <p class="muted">Escribe el código de la tarjeta que venía en la caja. Tiene esta forma: KIT-7HQ2KD.</p>
+    <form id="af"><label for="kc">Código del kit</label><input id="kc" required placeholder="KIT-XXXXXX" autocapitalize="characters" spellcheck="false" style="text-transform:uppercase;letter-spacing:.06em"><p id="am" class="error" role="alert"></p><button class="btn" style="width:100%">Activar</button></form></div>`;
+  $('#af').onsubmit = async (e) => { e.preventDefault(); try { await TS.claimKit($('#kc').value); toast('Kit activado'); boot(); } catch (err) { $('#am').textContent = err.message; $('#kc').setAttribute('aria-invalid', 'true'); } };
+}
+
+function shell() {
+  const paid = cur.paid_until ? new Date(cur.paid_until) : null;
+  const soon = paid && paid - Date.now() < 30 * 864e5;
+  $('#view').innerHTML = `<div class="shell">
+    <aside class="side">
+      <div class="prop">${props.length > 1 ? `<label for="ps" style="margin:0 0 6px">Piso</label><select id="ps">${props.map(p => `<option value="${p.id}" ${p.id === cur.id ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}</select>` : `<small class="muted">Tu piso</small><b>${esc(cur.name)}</b>`}</div>
+      <nav aria-label="Secciones del panel">${[['guide', 'edit', 'Guía'], ['wifi', 'wifi', 'Wifi'], ['tags', 'tag', 'Etiquetas'], ['account', 'home', 'Cuenta']].map(([k, ic, t]) => `<a href="#" data-t="${k}" ${tab === k ? 'aria-current="page"' : ''}>${TSI.svg(ic)}${t}</a>`).join('')}</nav>
+      <div class="status">${cur.id ? `<a class="btn small ghost" style="width:100%;margin-bottom:10px" href="${TS.tagUrl(firstTag())}" target="_blank" rel="noopener">Ver como huésped ${TSI.svg('arrow')}</a>` : ''}${paid ? `<span class="pill ${soon ? 'warn' : 'ok'}">Activa hasta ${paid.toLocaleDateString('es-ES')}</span>` : ''}</div>
+    </aside>
+    <section class="pane" id="pane"></section></div>`;
+  document.querySelectorAll('.side nav a').forEach(a => a.onclick = (e) => { e.preventDefault(); collect(); tab = a.dataset.t; shell(); });
+  const ps = $('#ps'); if (ps) ps.onchange = () => { if (dirty && !confirm('Tienes cambios sin guardar. ¿Cambiar de piso igualmente?')) { ps.value = cur.id; return; } dirty = false; cur = props.find(p => p.id === ps.value); shell(); };
+  ({ guide: guidePane, wifi: wifiPane, tags: tagsPane, account: accountPane })[tab]();
+}
+function firstTag() { const t = tags.find(t => t.property_id === cur.id); return t ? t.code : 'demo'; }
+let collect = () => {};
+function markDirty() { dirty = true; const s = $('.savebar .state'); if (s) s.textContent = 'Cambios sin guardar'; }
+function savebar() { return `<div class="savebar"><span class="state" role="status">${dirty ? 'Cambios sin guardar' : 'Todo guardado'}</span><button class="btn" id="sv">Guardar cambios</button></div>`; }
+function bindDirty() { document.querySelectorAll('#pane input,#pane textarea,#pane select').forEach(el => el.addEventListener('input', markDirty)); }
+
+function guidePane() {
+  if (!cur.languages.includes(elang)) elang = cur.languages[0];
+  $('#pane').innerHTML = `<h1>Guía del huésped</h1><p class="muted" style="margin:0">Lo que ven tus huéspedes al tocar el azulejo. Cambia de idioma para escribir las traducciones.</p>
+    <label for="pn">Nombre del piso</label><input id="pn" value="${esc(cur.name)}" maxlength="120">
+    <label>Idiomas que ofreces</label><div class="chk">${Object.entries(LANGS).map(([k, v]) => `<label><input type="checkbox" value="${k}" ${cur.languages.includes(k) ? 'checked' : ''} class="lg">${v}</label>`).join('')}</div>
+    <div class="group"><h2>Textos</h2>
+      <div class="lt" role="group" aria-label="Idioma que estás editando">${cur.languages.map(l => `<button type="button" data-l="${l}" aria-pressed="${l === elang}">${LANGS[l]}</button>`).join('')}</div>
+      <label for="wm">Mensaje de bienvenida (${elang.toUpperCase()})</label><textarea id="wm" rows="2">${esc((cur.welcome || {})[elang] || '')}</textarea>
+      <div id="secs">${cur.sections.map((s, i) => `<div class="sec" data-i="${i}">
+        <div class="top">
+          <div class="pick"><label>Icono</label><button type="button" class="pk" aria-haspopup="true" aria-label="Cambiar icono">${TSI.sectionIcon(s.icon)}</button>
+            <div class="palette" hidden>${TSI.SECTION_ICONS.map(n => `<button type="button" data-n="${n}" aria-label="${n}" aria-pressed="${s.icon === n}">${TSI.svg(n)}</button>`).join('')}</div></div>
+          <div><label>Título (${elang.toUpperCase()})</label><input class="st" value="${esc((s.title || {})[elang] || '')}" placeholder="${esc((s.title || {}).es || '')}"></div>
+          <div class="tools"><button type="button" class="iconbtn up" aria-label="Subir">${TSI.svg('up')}</button><button type="button" class="iconbtn dn" aria-label="Bajar">${TSI.svg('down')}</button><button type="button" class="iconbtn rm" aria-label="Borrar sección">${TSI.svg('trash')}</button></div></div>
+        <label>Texto (${elang.toUpperCase()}) <span class="hint">Los enlaces que empiecen por https:// se podrán pulsar</span></label><textarea class="sb" placeholder="${esc((s.body || {}).es || '')}">${esc((s.body || {})[elang] || '')}</textarea></div>`).join('')}</div>
+      <button type="button" class="btn ghost small" id="add" style="margin-top:12px">${TSI.svg('plus')}Añadir sección</button>
+    </div>
+    <div class="group"><h2>Datos del alojamiento</h2>
+      <div class="row">
+        <div><label for="ct">Contacto para huéspedes <span class="hint">Si es un móvil, se abre WhatsApp</span></label><input id="ct" value="${esc(cur.contact || '')}" placeholder="+34 600 111 222"></div>
+        <div><label for="lic">Nº de registro turístico <span class="hint">El de tu comunidad autónoma</span></label><input id="lic" value="${esc(cur.license_number || '')}" placeholder="VT-12345-V"></div>
+      </div>
+      <label for="ck">Enlace de tu check-in online <span class="hint">Para el registro de viajeros. Sale como botón destacado.</span></label><input id="ck" type="url" value="${esc(cur.checkin_url || '')}" placeholder="https://…">
+    </div>
+    ${savebar()}`;
+  collect = () => {
+    if (!$('#pn')) return;
+    cur.name = $('#pn').value.trim() || 'Mi piso'; cur.contact = $('#ct').value.trim(); cur.license_number = $('#lic').value.trim();
+    const ck = $('#ck').value.trim(); cur.checkin_url = /^https:\/\//.test(ck) ? ck : '';
+    cur.welcome = { ...(cur.welcome || {}), [elang]: $('#wm').value };
+    document.querySelectorAll('.sec').forEach(d => { const s = cur.sections[d.dataset.i]; s.title = { ...(s.title || {}), [elang]: $('.st', d).value }; s.body = { ...(s.body || {}), [elang]: $('.sb', d).value }; });
+    const ls = [...document.querySelectorAll('.lg:checked')].map(x => x.value); cur.languages = ls.length ? ls : ['es'];
+  };
+  bindDirty();
+  document.querySelectorAll('.lt button').forEach(b => b.onclick = () => { collect(); elang = b.dataset.l; guidePane(); });
+  document.querySelectorAll('.lg').forEach(c => c.onchange = () => { collect(); markDirty(); guidePane(); });
+  document.querySelectorAll('.sec').forEach(d => {
+    const i = +d.dataset.i;
+    $('.up', d).onclick = () => { collect(); if (i > 0) { [cur.sections[i - 1], cur.sections[i]] = [cur.sections[i], cur.sections[i - 1]]; markDirty(); } guidePane(); };
+    $('.dn', d).onclick = () => { collect(); if (i < cur.sections.length - 1) { [cur.sections[i + 1], cur.sections[i]] = [cur.sections[i], cur.sections[i + 1]]; markDirty(); } guidePane(); };
+    $('.rm', d).onclick = () => { if (confirm('¿Borrar esta sección en todos los idiomas?')) { collect(); cur.sections.splice(i, 1); markDirty(); guidePane(); } };
+    const pk = $('.pk', d), pal = $('.palette', d);
+    pk.onclick = (e) => { e.stopPropagation(); document.querySelectorAll('.palette').forEach(p => { if (p !== pal) p.hidden = true; }); pal.hidden = !pal.hidden; };
+    pal.querySelectorAll('button').forEach(b => b.onclick = () => { collect(); cur.sections[i].icon = b.dataset.n; markDirty(); guidePane(); });
+  });
+  document.addEventListener('click', () => document.querySelectorAll('.palette').forEach(p => p.hidden = true), { once: true });
+  $('#add').onclick = () => { collect(); cur.sections.push({ key: 's' + TS.rand(4).toLowerCase(), icon: 'info', title: { [elang]: '' }, body: { [elang]: '' } }); markDirty(); guidePane(); $('#secs .sec:last-child .st').focus(); };
+  $('#sv').onclick = save;
+}
+function wifiPane() {
+  $('#pane').innerHTML = `<h1>Wifi</h1><p class="muted" style="margin:0">Sale arriba del todo en la guía. Cámbialo aquí cada vez que cambies la clave del router.</p>
+    <div class="row"><div><label for="ws">Nombre de la red</label><input id="ws" value="${esc(cur.wifi_ssid || '')}" autocomplete="off"></div>
+    <div><label for="wp">Contraseña</label><input id="wp" value="${esc(cur.wifi_password || '')}" autocomplete="off" spellcheck="false"></div></div>
+    <label for="wsec">Seguridad</label><select id="wsec">${[['WPA', 'WPA / WPA2 / WPA3 (lo normal)'], ['WEP', 'WEP (routers antiguos)'], ['nopass', 'Abierta, sin contraseña']].map(([v, t]) => `<option ${cur.wifi_security === v ? 'selected' : ''} value="${v}">${t}</option>`).join('')}</select>
+    <label style="display:flex;gap:10px;font-weight:500;align-items:center"><input type="checkbox" id="wh" ${cur.wifi_hidden ? 'checked' : ''}>Ocultar el wifi de la guía (por ejemplo, entre estancias)</label>
+    <div style="margin-top:20px;display:flex;gap:20px;align-items:center;flex-wrap:wrap">${cur.wifi_ssid ? `<div class="qrmini">${TS.qrSvg(TS.wifiString(cur))}</div>` : ''}<p class="muted" style="max-width:42ch;margin:0">QR de wifi opcional para imprimir: conecta solo al escanearlo. Si lo imprimes, tendrás que reimprimirlo cuando cambies la clave. El azulejo NFC no hace falta reimprimirlo nunca.</p></div>
+    ${savebar()}`;
+  collect = () => { if (!$('#ws')) return; cur.wifi_ssid = $('#ws').value.trim(); cur.wifi_password = $('#wp').value; cur.wifi_security = $('#wsec').value; cur.wifi_hidden = $('#wh').checked; };
+  bindDirty(); $('#sv').onclick = save;
+}
+function tagsPane() {
+  collect = () => {};
+  const total = Object.values(stats).reduce((a, b) => a + b, 0); const max = Math.max(1, ...Object.values(stats));
+  const top = tags.slice().sort((a, b) => (stats[b.code] || 0) - (stats[a.code] || 0))[0];
+  const opts = (sel) => [['', 'Toda la guía'], ['wifi', 'Wifi'], ...cur.sections.map(s => [s.key, (s.title || {}).es || (s.title || {})[cur.languages[0]] || s.key])].map(([v, t]) => `<option value="${esc(v)}" ${v === (sel || '') ? 'selected' : ''}>${esc(t)}</option>`).join('');
+  $('#pane').innerHTML = `<h1>Etiquetas y uso</h1><p class="muted" style="margin:0">Elige qué abre cada etiqueta. Los toques se cuentan sin datos del huésped (últimos 30 días).</p>
+    <div class="stats"><div class="stat"><span class="muted">Toques</span><b>${total}</b></div><div class="stat"><span class="muted">Etiquetas activas</span><b>${tags.filter(t => t.property_id).length}</b></div><div class="stat"><span class="muted">La más usada</span><b style="font-size:20px;margin-top:6px">${esc(top && stats[top.code] ? top.label : 'Sin datos aún')}</b></div></div>
+    ${tags.length ? `<table><thead><tr><th>Etiqueta</th><th>Abre</th><th>Toques</th></tr></thead><tbody>
+    ${tags.map(t => `<tr><td><b>${esc(t.label || t.code)}</b><br><code class="u">${esc(TS.tagUrl(t.code))}</code></td>
+      <td><select data-c="${esc(t.code)}" class="tsel" aria-label="Qué abre ${esc(t.label || t.code)}">${opts(t.property_id === cur.id ? t.section_key : null)}</select>${t.property_id && t.property_id !== cur.id ? '<br><span class="muted" style="font-size:12.5px">Ahora está en otro piso</span>' : ''}</td>
+      <td style="min-width:120px"><b>${stats[t.code] || 0}</b><div class="bar"><i style="width:${(stats[t.code] || 0) / max * 100}%"></i></div></td></tr>`).join('')}
+    </tbody></table>` : '<p class="muted">Aún no tienes etiquetas. Activa un kit para verlas aquí.</p>'}
+    <p class="muted" style="font-size:14px;margin-top:16px">¿Has comprado pegatinas extra? <a href="#" id="more">Activa otro código de kit</a>.</p>`;
+  document.querySelectorAll('.tsel').forEach(s => s.onchange = async () => {
+    if (!cur.id) { toast('Guarda la guía primero'); return; }
+    try { await TS.updateTag(s.dataset.c, { property_id: cur.id, section_key: s.value || null }); tags = await TS.myTags(); toast('Etiqueta actualizada'); } catch (e) { toast('No se pudo guardar'); }
+  });
+  $('#more').onclick = (e) => { e.preventDefault(); const c = prompt('Código del kit (KIT-XXXXXX)'); if (c) TS.claimKit(c).then(() => { toast('Kit activado'); boot(); }).catch(err => alert(err.message)); };
+}
+function accountPane() {
+  collect = () => {};
+  const paid = cur.paid_until ? new Date(cur.paid_until) : null;
+  $('#pane').innerHTML = `<h1>Cuenta</h1>
+    <p>Has entrado como <b>${esc(user.email)}</b>.</p>
+    <p>Guía de <b>${esc(cur.name)}</b>: ${paid ? `activa hasta el <b>${paid.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</b>` : 'sin fecha'}.</p>
+    <p class="muted">La renovación cuesta ${TS.money(C.RENEWAL_PRICE)} al año. Te avisamos un mes antes por email con el enlace de pago (Bizum o transferencia). Si no renuevas, el azulejo sigue mostrando tu wifi.</p>
+    <p><a class="btn ghost small" href="mailto:${esc(C.CONTACT_EMAIL)}?subject=${encodeURIComponent('Renovación ' + cur.name)}">Renovar o preguntar algo</a></p>
+    <div class="group"><h2>Otro piso</h2><p class="muted">Cada kit es para un piso. Si tienes más, añádelos aquí y asígnales sus etiquetas.</p><button class="btn ghost small" id="np">${TSI.svg('plus')}Añadir otro piso</button></div>`;
+  $('#np').onclick = () => { cur = newProperty(); tab = 'guide'; dirty = true; shell(); };
+}
+async function save() {
+  collect(); if (!cur.slug) cur.slug = TS.slugify(cur.name) + '-' + TS.rand(4).toLowerCase();
+  const b = $('#sv'); if (b) { b.disabled = true; b.textContent = 'Guardando…'; }
+  try { const saved = await TS.saveProperty(cur); props = await TS.myProperties(); cur = props.find(p => p.id === saved.id) || props[props.length - 1]; dirty = false; toast('Guardado'); shell(); }
+  catch (e) { if (b) { b.disabled = false; b.textContent = 'Guardar cambios'; } toast('No se pudo guardar: ' + e.message); }
+}
+boot();
+</script>
+</body>
+</html>

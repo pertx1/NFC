@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hacer pedido · TocToc</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Young+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .layout{display:grid;grid-template-columns:1.35fr .9fr;gap:28px;align-items:start;padding:8px 0 72px}
+  @media (max-width:880px){.layout{grid-template-columns:1fr}}
+  h1{font-size:clamp(30px,3.4vw,40px);margin:0 0 6px}
+  fieldset{border:0;padding:0;margin:26px 0 0}
+  legend{font-family:var(--display);font-size:21px;color:var(--cobalt-ink);padding:0;margin-bottom:4px}
+  .item{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}
+  .item b{color:var(--cobalt-ink)}
+  .stepper{display:inline-flex;align-items:center;border:1.5px solid var(--line);border-radius:99px;overflow:hidden;flex:none;background:#fff}
+  .stepper button{width:38px;height:38px;border:0;background:transparent;cursor:pointer;color:var(--cobalt);display:flex;align-items:center;justify-content:center;transition:background-color 160ms ease}
+  .stepper button:hover{background:var(--cobalt-soft)}
+  .stepper button:active svg{transform:scale(.85)}
+  .stepper output{min-width:28px;text-align:center;font-weight:700}
+  .choices{display:grid;gap:10px;margin-top:8px}
+  .choices label{display:flex;gap:12px;align-items:flex-start;font-weight:500;border:1.5px solid var(--line);border-radius:14px;padding:14px;margin:0;cursor:pointer;background:#fff;transition:border-color 160ms ease,box-shadow 160ms ease}
+  .choices label:has(input:checked){border-color:var(--cobalt);box-shadow:0 0 0 3px rgba(31,63,158,.12)}
+  .choices input{margin-top:3px}
+  .choices .t{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--cobalt-ink)}
+  .choices .t .icon{color:var(--cobalt)}
+  .choices small{display:block;color:var(--muted);font-size:14px;margin-top:2px}
+  .finishes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
+  .finishes label{margin:0;cursor:pointer;border:1.5px solid var(--line);border-radius:14px;padding:12px;background:#fff;text-align:center;font-weight:600;font-size:14px;transition:border-color 160ms ease}
+  .finishes label:has(input:checked){border-color:var(--cobalt);box-shadow:0 0 0 3px rgba(31,63,158,.12)}
+  .finishes input{position:absolute;opacity:0;pointer-events:none}
+  .sw{display:block;width:100%;aspect-ratio:1;border-radius:9px;margin-bottom:8px;border:1px solid var(--line)}
+  @media (max-width:520px){.finishes{grid-template-columns:1fr 1fr 1fr}.finishes label{font-size:12.5px;padding:8px}}
+  aside.card{position:sticky;top:16px}
+  aside h2{font-size:22px;margin:0 0 12px}
+  .line{display:flex;justify-content:space-between;gap:12px;padding:6px 0}
+  .total{font-size:22px;font-weight:700;border-top:1px solid var(--line);margin-top:8px;padding-top:12px;color:var(--cobalt-ink)}
+  .note{font-size:13.5px;color:var(--muted);margin:12px 0 0}
+  .done{max-width:620px;margin:16px auto 72px}
+  .done h1{margin-top:12px}
+  .paybox{background:var(--cobalt-soft);border-radius:14px;padding:18px;margin:14px 0}
+  .paybox .big{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:19px;font-weight:700;color:var(--cobalt-ink);word-break:break-all;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .copybtn{border:0;background:#fff;border-radius:99px;padding:6px 12px;font:600 13px var(--ui);color:var(--cobalt);cursor:pointer;display:inline-flex;gap:6px;align-items:center;flex:none}
+  .copybtn:active{transform:scale(.96)}
+  .done ol{padding-left:20px}
+  .done li{margin:6px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar"><a class="logo" href="./"><span class="logo-mark"></span><span class="brand-name">TocToc</span></a><a href="./" class="muted">Volver</a></header>
+
+  <div id="form-view" class="layout">
+    <form id="f" class="card" novalidate>
+      <h1>Tu pedido</h1>
+      <p class="muted" style="margin:0">Fabricado bajo pedido. Sale en 2 o 3 días laborables desde el pago.</p>
+
+      <fieldset><legend>Productos</legend><div id="items"></div></fieldset>
+
+      <fieldset><legend>Acabado del azulejo</legend>
+        <div class="finishes">
+          <label><input type="radio" name="finish" value="Cobalto clásico" checked><span class="sw" style="background:#fff;box-shadow:inset 0 0 0 8px #1f3f9e,inset 0 0 0 11px #fff,inset 0 0 0 12.5px #1f3f9e"></span>Cobalto clásico</label>
+          <label><input type="radio" name="finish" value="Blanco liso"><span class="sw" style="background:#fbfcff"></span>Blanco liso</label>
+          <label><input type="radio" name="finish" value="Madera de roble"><span class="sw" style="background:#c99a66"></span>Madera de roble</label>
+        </div>
+      </fieldset>
+
+      <fieldset><legend>Envío</legend>
+        <div class="row">
+          <div><label for="name">Nombre y apellidos</label><input id="name" required autocomplete="name"></div>
+          <div><label for="phone">Teléfono <span class="hint">Para el repartidor y Bizum</span></label><input id="phone" type="tel" required autocomplete="tel" inputmode="tel"></div>
+        </div>
+        <label for="email">Email</label><input id="email" type="email" required autocomplete="email">
+        <label for="zone">Destino</label>
+        <select id="zone"></select>
+        <label for="address">Dirección completa <span class="hint">Calle, número, piso, código postal y ciudad</span></label>
+        <textarea id="address" required autocomplete="street-address" rows="3"></textarea>
+        <label for="vat">NIF o CIF y razón social <span class="hint">Opcional, si necesitas factura a nombre de tu empresa</span></label>
+        <input id="vat" placeholder="B12345678 · Apartamentos Sol SL">
+      </fieldset>
+
+      <fieldset><legend>Forma de pago</legend><div class="choices" id="pay"></div></fieldset>
+
+      <label style="display:flex;gap:10px;font-weight:500;align-items:flex-start;margin-top:22px"><input type="checkbox" id="agree"><span>Acepto las <a href="legal.html#condiciones" target="_blank">condiciones de venta</a> y la <a href="legal.html#privacidad" target="_blank">política de privacidad</a>. Al ser un producto personalizado, no admite desistimiento salvo defecto.</span></label>
+      <p id="err" class="error" role="alert"></p>
+      <button class="btn" type="submit" style="width:100%">Confirmar pedido</button>
+    </form>
+
+    <aside class="card" aria-live="polite">
+      <h2>Resumen</h2>
+      <div id="sum"></div>
+      <p class="note">IVA incluido. El kit incluye 12 meses de guía editable; después, <span class="p-renew"></span> al año (opcional). ¿Canarias, Ceuta o Melilla? <a class="mail" href="#">Escríbenos</a>.</p>
+    </aside>
+  </div>
+
+  <div id="done-view" class="card done" hidden></div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="assets/icons.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const { C, $, esc, money } = TS;
+TS.demoBanner(); TS.brand();
+document.querySelectorAll('.mail').forEach(a => a.href = 'mailto:' + C.CONTACT_EMAIL);
+$('.p-renew').textContent = money(C.RENEWAL_PRICE);
+const toast = (m) => { const t = $('#toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 1800); };
+const pre = new URLSearchParams(location.search).get('p') || 'starter';
+const qty = Object.fromEntries(C.PRODUCTS.map(p => [p.id, p.id === pre ? 1 : 0]));
+
+$('#zone').innerHTML = Object.keys(C.SHIPPING).map(k => `<option value="${k}">${esc(C.SHIPPING_LABELS[k])} · ${money(C.SHIPPING[k])}</option>`).join('');
+
+function items() {
+  $('#items').innerHTML = C.PRODUCTS.map(p => `
+    <div class="item"><div><b>${esc(p.name)}</b> · ${money(p.price)}<br><span class="muted" style="font-size:14px">${esc(p.desc)}</span></div>
+    <div class="stepper"><button type="button" data-d="-1" data-id="${p.id}" aria-label="Quitar ${esc(p.name)}">${TSI.svg('minus')}</button><output aria-live="polite">${qty[p.id]}</output><button type="button" data-d="1" data-id="${p.id}" aria-label="Añadir ${esc(p.name)}">${TSI.svg('plus')}</button></div></div>`).join('');
+  document.querySelectorAll('.stepper button').forEach(b => b.onclick = () => { qty[b.dataset.id] = Math.min(50, Math.max(0, qty[b.dataset.id] + +b.dataset.d)); items(); render(); });
+}
+function methods() {
+  const out = [];
+  if (C.BIZUM_PHONE || TS.DEMO) out.push(['bizum', 'bizum', 'Bizum', 'Al momento, desde la app de tu banco.']);
+  out.push(['transfer', 'bank', 'Transferencia bancaria', 'Sin comisiones. Enviamos cuando llega el pago (normalmente al día siguiente).']);
+  out.push(['paypal', 'card', 'Tarjeta o PayPal', 'Paga con tarjeta de débito o crédito, aunque no tengas cuenta PayPal.']);
+  if (C.SHOPIFY_CHECKOUT_URL) out.push(['shopify', 'card', 'Pago con tarjeta, Apple Pay o Google Pay', 'A través de nuestra pasarela segura.']);
+  $('#pay').innerHTML = out.map(([v, ic, t, d], i) => `<label><input type="radio" name="pay" value="${v}" ${i === 0 ? 'checked' : ''}><span><span class="t">${TSI.svg(ic)}${t}</span><small>${d}</small></span></label>`).join('');
+}
+function calc() {
+  const list = C.PRODUCTS.filter(p => qty[p.id] > 0).map(p => ({ id: p.id, qty: qty[p.id] }));
+  const sub = list.reduce((s, i) => s + C.PRODUCTS.find(p => p.id === i.id).price * i.qty, 0);
+  const ship = list.length ? C.SHIPPING[$('#zone').value] : 0;
+  return { list, sub, ship, total: Math.round((sub + ship) * 100) / 100 };
+}
+function render() {
+  const o = calc();
+  $('#sum').innerHTML = (o.list.length ? o.list.map(i => { const p = C.PRODUCTS.find(x => x.id === i.id); return `<div class="line"><span>${i.qty} × ${esc(p.name)}</span><span>${money(p.price * i.qty)}</span></div>`; }).join('') : '<p class="muted">Añade al menos un producto.</p>') +
+    `<div class="line muted"><span>Envío a ${esc(C.SHIPPING_LABELS[$('#zone').value])}</span><span>${money(o.ship)}</span></div><div class="line total"><span>Total</span><span>${money(o.total)}</span></div>`;
+}
+$('#zone').addEventListener('change', render);
+items(); methods(); render();
+
+function invalid(id, msg) { const el = $('#' + id); if (el) { el.setAttribute('aria-invalid', 'true'); el.focus(); } $('#err').textContent = msg; return false; }
+document.querySelectorAll('input,textarea').forEach(el => el.addEventListener('input', () => el.removeAttribute('aria-invalid')));
+
+$('#f').addEventListener('submit', async (e) => {
+  e.preventDefault(); $('#err').textContent = '';
+  const o = calc();
+  if (!o.list.length) return invalid(null, 'Añade al menos un producto.');
+  if (!$('#name').value.trim()) return invalid('name', 'Falta tu nombre.');
+  if ($('#phone').value.replace(/\D/g, '').length < 9) return invalid('phone', 'Revisa el teléfono: necesitamos 9 cifras.');
+  if (!/^\S+@\S+\.\S+$/.test($('#email').value)) return invalid('email', 'Revisa el email: ahí te mandamos el seguimiento.');
+  if ($('#address').value.trim().length < 12) return invalid('address', 'Escribe la dirección completa, con código postal.');
+  if (!$('#agree').checked) return invalid('agree', 'Tienes que aceptar las condiciones para seguir.');
+  const order = { name: $('#name').value.trim(), phone: $('#phone').value.trim(), email: $('#email').value.trim(), zone: $('#zone').value,
+    address: $('#address').value.trim(), vat: $('#vat').value.trim(), finish: $('input[name=finish]:checked').value,
+    items: o.list, total: o.total, currency: C.CURRENCY, payment_method: $('input[name=pay]:checked').value };
+  const btn = e.submitter; btn.disabled = true; btn.textContent = 'Enviando pedido…';
+  try {
+    const saved = await TS.createOrder(order);
+    if (C.ORDER_NOTIFY_ENDPOINT) fetch(C.ORDER_NOTIFY_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ _subject: 'Pedido nuevo ' + saved.ref, ...saved, items: JSON.stringify(saved.items) }) }).catch(() => {});
+    done(saved);
+  } catch (err) { $('#err').textContent = 'No hemos podido guardar el pedido. Inténtalo de nuevo o escríbenos a ' + C.CONTACT_EMAIL + '.'; btn.disabled = false; btn.textContent = 'Confirmar pedido'; }
+});
+
+function copyRow(value, label) { return `<div class="big"><span>${esc(value)}</span><button class="copybtn" type="button" data-copy="${esc(value)}">${TSI.svg('copy')}Copiar</button></div>${label ? `<small class="muted">${label}</small>` : ''}`; }
+function done(o) {
+  const amt = money(o.total); let how = '';
+  if (o.payment_method === 'bizum') how = `<p>Envía <b>${amt}</b> por Bizum a este número, con el concepto <b>${o.ref}</b>:</p><div class="paybox">${copyRow(C.BIZUM_PHONE || '600 000 000 (configura BIZUM_PHONE)')}</div>`;
+  else if (o.payment_method === 'transfer') how = `<p>Haz una transferencia de <b>${amt}</b> a esta cuenta:</p><div class="paybox">${copyRow(C.IBAN, 'Titular: ' + esc(C.IBAN_HOLDER))}</div><p>Concepto: <b>${o.ref}</b>. Es importante para identificar tu pago.</p>`;
+  else if (o.payment_method === 'paypal') { const link = C.PAYPAL_ME ? `https://paypal.me/${encodeURIComponent(C.PAYPAL_ME)}/${o.total.toFixed(2)}EUR` : '#'; how = `<p>Pulsa el botón y paga <b>${amt}</b>. En la nota, escribe <b>${o.ref}</b>.</p><p><a class="btn" href="${link}" target="_blank" rel="noopener">Pagar ${amt} con tarjeta o PayPal</a></p><p class="muted" style="font-size:14px">Si no tienes cuenta, elige «Pagar con tarjeta de débito o crédito».${C.PAYPAL_ME ? '' : ' (Vendedor: configura PAYPAL_ME.)'}</p>`; }
+  else if (o.payment_method === 'shopify') how = `<p><a class="btn" href="${esc(C.SHOPIFY_CHECKOUT_URL)}" target="_blank" rel="noopener">Ir al pago seguro</a></p><p class="muted">Usa el mismo email para que identifiquemos tu pedido ${o.ref}.</p>`;
+  $('#form-view').hidden = true; $('#form-view').style.display = 'none';
+  const d = $('#done-view'); d.hidden = false;
+  d.innerHTML = `<span class="pill ok">${TSI.svg('check')}Pedido recibido</span><h1>¡Gracias, ${esc(o.name.split(' ')[0])}!</h1>
+    <p class="muted">Pedido <b>${o.ref}</b> · ${amt}. En menos de 24 horas te mandamos estas instrucciones a ${esc(o.email)}.</p>
+    <h2 style="font-size:22px;margin:24px 0 4px">Cómo pagar</h2>${how}
+    <h2 style="font-size:22px;margin:24px 0 4px">Qué pasa ahora</h2>
+    <ol><li>Confirmamos tu pago, normalmente el mismo día.</li><li>Fabricamos y enviamos tu kit en 2 o 3 días laborables.</li><li>En la caja va el código para activar tu guía.</li></ol>
+    <p class="muted">¿Dudas? <a href="mailto:${esc(C.CONTACT_EMAIL)}">${esc(C.CONTACT_EMAIL)}</a></p>`;
+  d.querySelectorAll('[data-copy]').forEach(b => b.onclick = () => navigator.clipboard.writeText(b.dataset.copy).then(() => toast('Copiado')));
+  scrollTo(0, 0);
+}
+</script>
+</body>
+</html>

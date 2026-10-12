@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#1f3f9e">
+<title>Guía de la casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Young+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  body{background:var(--glaze)}
+  .head{background:var(--cobalt);color:#fff;padding:26px 20px 46px;position:relative}
+  .head small{color:#dfe6fb;font-size:14px}
+  .head h1{color:#fff;margin:4px 0 10px;font-size:clamp(28px,7vw,36px)}
+  .head p{margin:0;color:#e9eefc;max-width:46ch}
+  .cen{position:absolute;left:0;right:0;bottom:0;height:20px;width:100%;display:block}
+  .langs{display:flex;gap:6px;flex-wrap:wrap;margin-top:16px}
+  .langs button{border:1.5px solid rgba(255,255,255,.45);background:transparent;color:#fff;border-radius:99px;padding:5px 11px;font:600 13px var(--ui);cursor:pointer;transition:transform 160ms var(--ease-out),background-color 160ms ease}
+  .langs button:active{transform:scale(.95)}
+  .langs button[aria-pressed="true"]{background:#fff;color:var(--cobalt)}
+  main{max-width:580px;margin:18px auto 40px;padding:0 14px;position:relative}
+  .wifi{background:#fff;border-radius:18px;padding:20px;box-shadow:var(--shadow)}
+  .k{font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .k .icon{color:var(--cobalt)}
+  .v{font-size:22px;font-weight:700;color:var(--cobalt-ink);word-break:break-all;margin:2px 0 12px}
+  .acts{display:flex;gap:8px;flex-wrap:wrap}
+  .qrbox{margin-top:14px;text-align:center;display:none}
+  .qrbox.open{display:block}
+  .qrbox svg{width:190px;height:190px;background:#fff;border-radius:12px}
+  .checkin{display:flex;align-items:center;gap:14px;margin-top:12px;background:var(--albero);color:var(--albero-ink);border-radius:18px;padding:16px 18px;text-decoration:none;font-weight:700;transition:transform 160ms var(--ease-out)}
+  .checkin:active{transform:scale(.98)}
+  .checkin .icon{width:26px;height:26px}
+  .checkin span small{display:block;font-weight:500}
+  .checkin .arrow{margin-left:auto}
+  .sec{margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .sec summary{display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer;font-weight:700;font-size:17px;list-style:none;color:var(--cobalt-ink)}
+  .sec summary::-webkit-details-marker{display:none}
+  .sec summary .ic{width:40px;height:40px;border-radius:11px;background:var(--cobalt-soft);color:var(--cobalt);display:flex;align-items:center;justify-content:center;flex:none}
+  .sec summary .ic .icon{width:22px;height:22px}
+  .sec summary .legacy{font-size:20px;line-height:1;width:auto;height:auto}
+  .sec summary .chev{margin-left:auto;color:var(--muted);transition:transform 200ms var(--ease-out)}
+  .sec[open] summary .chev{transform:rotate(180deg)}
+  .sec .body{padding:0 18px 18px 72px;white-space:pre-line}
+  .sec.hl{border-color:var(--cobalt);box-shadow:0 0 0 3px rgba(31,63,158,.15)}
+  .contact{margin-top:18px;text-align:center;font-size:15px;color:var(--muted)}
+  .contact a{font-weight:700}
+  .foot{text-align:center;font-size:12.5px;color:var(--muted);margin-top:24px;display:grid;gap:4px}
+  .empty{max-width:460px;margin:70px auto;text-align:center;padding:0 20px}
+  .empty .icon{width:48px;height:48px;color:var(--cobalt)}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <pattern id="cen-w" width="20" height="20" patternUnits="userSpaceOnUse"><rect width="20" height="20" fill="#1f3f9e"/><g fill="none" stroke="#fff" stroke-width="1.2"><path d="M0 5A5 5 0 0 0 5 0M15 0A5 5 0 0 0 20 5M20 15A5 5 0 0 0 15 20M5 20A5 5 0 0 0 0 15"/><path d="M10 4 16 10 10 16 4 10Z"/></g><circle cx="10" cy="10" r="1.6" fill="#e9b23a"/></pattern>
+</defs></svg>
+<div id="app"><div class="empty muted">Cargando…</div></div>
+<div class="toast" id="toast" role="status"></div>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="assets/icons.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const { esc, $ } = TS;
+const UI = {
+  es: { wifi: 'WIFI', net: 'Red', pass: 'Contraseña', copy: 'Copiar contraseña', copied: 'Contraseña copiada', copyNet: 'Copiar red', showQr: 'QR del wifi', hideQr: 'Ocultar QR', qrHelp: 'Escanéalo desde otro dispositivo para conectarlo.', checkin: 'Registro de viajeros', checkinSub: 'Obligatorio en España · 2 minutos', contact: '¿Necesitas ayuda? Escribe a tu anfitrión:', nf: 'Esta etiqueta aún no está activada', nfh: 'Si eres el anfitrión, entra y activa tu kit.', welcome: 'Bienvenidos a', basic: 'Tu anfitrión añadirá más información pronto.', lic: 'Nº de registro turístico' },
+  en: { wifi: 'WI-FI', net: 'Network', pass: 'Password', copy: 'Copy password', copied: 'Password copied', copyNet: 'Copy name', showQr: 'Wi-Fi QR', hideQr: 'Hide QR', qrHelp: 'Scan it from another device to join.', checkin: 'Guest registration', checkinSub: 'Required by Spanish law · 2 minutes', contact: 'Need help? Message your host:', nf: 'This tag is not activated yet', nfh: 'If you are the host, log in and activate your kit.', welcome: 'Welcome to', basic: 'Your host will add more information soon.', lic: 'Tourist licence no.' },
+  fr: { wifi: 'WI-FI', net: 'Réseau', pass: 'Mot de passe', copy: 'Copier le mot de passe', copied: 'Mot de passe copié', copyNet: 'Copier le nom', showQr: 'QR Wi-Fi', hideQr: 'Masquer le QR', qrHelp: 'Scannez-le avec un autre appareil pour vous connecter.', checkin: 'Enregistrement des voyageurs', checkinSub: 'Obligatoire en Espagne · 2 minutes', contact: 'Besoin d’aide ? Écrivez à votre hôte :', nf: 'Ce tag n’est pas encore activé', nfh: 'Hôte : connectez-vous et activez votre kit.', welcome: 'Bienvenue à', basic: 'Votre hôte ajoutera bientôt des informations.', lic: 'N° d’enregistrement touristique' },
+  de: { wifi: 'WLAN', net: 'Netzwerk', pass: 'Passwort', copy: 'Passwort kopieren', copied: 'Passwort kopiert', copyNet: 'Name kopieren', showQr: 'WLAN-QR', hideQr: 'QR ausblenden', qrHelp: 'Mit einem anderen Gerät scannen, um sich zu verbinden.', checkin: 'Gästeregistrierung', checkinSub: 'In Spanien Pflicht · 2 Minuten', contact: 'Hilfe nötig? Schreib deinem Gastgeber:', nf: 'Dieser Tag ist noch nicht aktiviert', nfh: 'Gastgeber: bitte einloggen und Kit aktivieren.', welcome: 'Willkommen in', basic: 'Weitere Infos folgen bald.', lic: 'Touristische Registriernummer' },
+  it: { wifi: 'WI-FI', net: 'Rete', pass: 'Password', copy: 'Copia password', copied: 'Password copiata', copyNet: 'Copia nome', showQr: 'QR Wi-Fi', hideQr: 'Nascondi QR', qrHelp: 'Scansionalo da un altro dispositivo per collegarti.', checkin: 'Registrazione ospiti', checkinSub: 'Obbligatoria in Spagna · 2 minuti', contact: 'Serve aiuto? Scrivi al tuo host:', nf: 'Questo tag non è ancora attivo', nfh: 'Host: accedi e attiva il tuo kit.', welcome: 'Benvenuti a', basic: 'Il tuo host aggiungerà presto altre informazioni.', lic: 'N. registro turistico' },
+  nl: { wifi: 'WIFI', net: 'Netwerk', pass: 'Wachtwoord', copy: 'Wachtwoord kopiëren', copied: 'Wachtwoord gekopieerd', copyNet: 'Naam kopiëren', showQr: 'Wifi-QR', hideQr: 'QR verbergen', qrHelp: 'Scan met een ander apparaat om te verbinden.', checkin: 'Gastenregistratie', checkinSub: 'Verplicht in Spanje · 2 minuten', contact: 'Hulp nodig? Stuur je host een bericht:', nf: 'Deze tag is nog niet geactiveerd', nfh: 'Host: log in en activeer je kit.', welcome: 'Welkom in', basic: 'Je host voegt binnenkort meer toe.', lic: 'Toeristisch registratienummer' },
+  pt: { wifi: 'WI-FI', net: 'Rede', pass: 'Palavra-passe', copy: 'Copiar palavra-passe', copied: 'Palavra-passe copiada', copyNet: 'Copiar rede', showQr: 'QR do Wi-Fi', hideQr: 'Ocultar QR', qrHelp: 'Leia-o noutro dispositivo para ligar.', checkin: 'Registo de hóspedes', checkinSub: 'Obrigatório em Espanha · 2 minutos', contact: 'Precisa de ajuda? Fale com o anfitrião:', nf: 'Esta etiqueta ainda não está ativada', nfh: 'Anfitrião: entre e ative o seu kit.', welcome: 'Bem-vindos a', basic: 'O anfitrião vai acrescentar mais informação em breve.', lic: 'N.º de registo turístico' }
+};
+const code = new URLSearchParams(location.search).get('t') || '';
+let data, lang;
+
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 1800); }
+async function copy(text, msg) { try { await navigator.clipboard.writeText(text); } catch (e) { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); } toast(msg); }
+const pick = (obj) => (obj && (obj[lang] || obj.es || obj.en || Object.values(obj)[0])) || '';
+const phoneLink = (s) => { const d = String(s).replace(/[^\d+]/g, ''); return d.length >= 9 ? `<a href="https://wa.me/${d.replace(/^\+/, '')}">${esc(s)}</a>` : esc(s); };
+
+function render() {
+  const p = data.property, u = UI[lang] || UI.es;
+  const active = !p.paid_until || new Date(p.paid_until) >= new Date(new Date().toDateString());
+  document.documentElement.lang = lang; document.title = p.name;
+  const langs = (p.languages || ['es']).filter(l => UI[l]);
+  const sections = active ? (p.sections || []) : [];
+  $('#app').innerHTML = `
+    <header class="head"><small>${u.welcome}</small><h1>${esc(p.name)}</h1><p>${esc(pick(p.welcome))}</p>
+      ${langs.length > 1 ? `<div class="langs" role="group" aria-label="Language">${langs.map(l => `<button data-l="${l}" aria-pressed="${l === lang}">${l.toUpperCase()}</button>`).join('')}</div>` : ''}
+      <svg class="cen" preserveAspectRatio="none" aria-hidden="true"><rect width="100%" height="20" fill="url(#cen-w)"/></svg></header>
+    <main>
+      ${p.wifi_ssid && !p.wifi_hidden ? `<section class="wifi ${data.section_key === 'wifi' ? 'hl' : ''}" id="s-wifi" aria-label="${u.wifi}">
+        <div class="k">${TSI.svg('wifi')}${u.wifi} · ${u.net}</div><div class="v">${esc(p.wifi_ssid)}</div>
+        ${p.wifi_password ? `<div class="k">${u.pass}</div><div class="v">${esc(p.wifi_password)}</div>` : ''}
+        <div class="acts">${p.wifi_password ? `<button class="btn small" id="cp">${TSI.svg('copy')}${u.copy}</button>` : ''}<button class="btn small ghost" id="cn">${u.copyNet}</button><button class="btn small ghost" id="qr" aria-expanded="false">${TSI.svg('qr')}${u.showQr}</button></div>
+        <div class="qrbox" id="qrbox">${TS.qrSvg(TS.wifiString(p))}<p class="muted" style="font-size:13px">${u.qrHelp}</p></div>
+      </section>` : ''}
+      ${active && p.checkin_url && /^https:\/\//.test(p.checkin_url) ? `<a class="checkin" href="${esc(p.checkin_url)}" target="_blank" rel="noopener">${TSI.svg('idcard')}<span>${u.checkin}<small>${u.checkinSub}</small></span>${TSI.svg('arrow', 'icon arrow')}</a>` : ''}
+      ${sections.map(s => `<details class="sec ${s.key === data.section_key ? 'hl' : ''}" id="s-${esc(s.key)}" ${s.key === data.section_key ? 'open' : ''}>
+        <summary><span class="ic">${TSI.sectionIcon(s.icon)}</span>${esc(pick(s.title))}${TSI.svg('down', 'icon chev')}</summary><div class="body">${TS.linkify(pick(s.body))}</div></details>`).join('')}
+      ${!sections.length ? `<p class="muted" style="text-align:center;margin-top:18px">${u.basic}</p>` : ''}
+      ${p.contact && active ? `<p class="contact">${u.contact}<br>${phoneLink(p.contact)}</p>` : ''}
+      <div class="foot">${p.license_number ? `<span>${u.lic}: <b>${esc(p.license_number)}</b></span>` : ''}<span>${esc(TS.C.BRAND)}</span></div>
+    </main>`;
+  document.querySelectorAll('.langs button').forEach(b => b.onclick = () => { lang = b.dataset.l; render(); });
+  const cp = $('#cp'); if (cp) cp.onclick = () => copy(p.wifi_password, u.copied);
+  const cn = $('#cn'); if (cn) cn.onclick = () => copy(p.wifi_ssid, '✓');
+  const qr = $('#qr'); if (qr) qr.onclick = () => { const b = $('#qrbox'); const open = b.classList.toggle('open'); qr.setAttribute('aria-expanded', open); qr.lastChild.textContent = open ? u.hideQr : u.showQr; };
+  const hl = document.querySelector('.hl'); if (hl && data.section_key && data.section_key !== 'wifi') setTimeout(() => hl.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' }), 250);
+}
+
+(async () => {
+  try { data = code ? await TS.getGuide(code) : null; } catch (e) { data = null; }
+  const nav = (navigator.language || 'es').slice(0, 2);
+  if (!data || !data.property) {
+    const u = UI[nav] || UI.es;
+    $('#app').innerHTML = `<div class="empty">${TSI.svg('tag')}<h1 style="font-size:28px">${u.nf}</h1><p class="muted">${u.nfh}</p><a class="btn" href="panel.html">Entrar</a></div>`;
+    return;
+  }
+  const langs = data.property.languages || ['es'];
+  lang = langs.includes(nav) ? nav : (langs.includes('en') && nav !== 'es' ? 'en' : langs[0]);
+  render();
+  if (code !== 'demo') TS.logTap(code, nav).catch(() => {});
+})();
+</script>
+</body>
+</html>
