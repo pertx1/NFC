@@ -46,6 +46,8 @@
   .copybtn:active{transform:scale(.96)}
   .done ol{padding-left:20px}
   .done li{margin:6px 0}
+  .offer-line{background:var(--albero-soft,#fdf3dc);color:var(--cobalt-ink);border-radius:12px;padding:12px 14px;font-weight:600;margin:16px 0 0}
+  [hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -92,6 +94,34 @@
       <h2>Resumen</h2>
       <div id="sum"></div>
       <p class="note">IVA incluido. El kit incluye 12 meses de guía editable; después, <span class="p-renew"></span> al año (opcional). ¿Canarias, Ceuta o Melilla? <a class="mail" href="#">Escríbenos</a>.</p>
+    </aside>
+  </div>
+
+  <div id="wait-view" class="layout" hidden>
+    <form id="wf" class="card" novalidate>
+      <h1>Reserva tu kit</h1>
+      <p class="muted" style="margin:0">Estamos preparando la primera tanda. Apúntate y te escribimos en cuanto salga, por orden de llegada. <b>No pagas nada ahora</b> y no te comprometes a nada.</p>
+      <p class="offer-line" id="offer" hidden></p>
+      <fieldset><legend>Tus datos</legend>
+        <div class="row">
+          <div><label for="wname">Nombre</label><input id="wname" required autocomplete="name"></div>
+          <div><label for="wphone">WhatsApp o teléfono <span class="hint">Opcional, para avisarte antes</span></label><input id="wphone" type="tel" autocomplete="tel" inputmode="tel"></div>
+        </div>
+        <label for="wemail">Email</label><input id="wemail" type="email" required autocomplete="email">
+        <div class="row">
+          <div><label for="wcity">Ciudad del piso</label><input id="wcity" autocomplete="address-level2" placeholder="Valencia"></div>
+          <div><label for="wunits">¿Cuántos pisos gestionas?</label><input id="wunits" type="number" min="1" max="500" value="1" inputmode="numeric"></div>
+        </div>
+        <label for="wprod">Lo que te interesa</label><select id="wprod"></select>
+      </fieldset>
+      <label style="display:flex;gap:10px;font-weight:500;align-items:flex-start;margin-top:22px"><input type="checkbox" id="wagree"><span>Acepto que me escribáis para avisarme del lanzamiento, según la <a href="legal.html#privacidad" target="_blank">política de privacidad</a>. Puedo pedir que me borréis cuando quiera.</span></label>
+      <p id="werr" class="error" role="alert"></p>
+      <button class="btn" type="submit" style="width:100%">Apuntarme</button>
+    </form>
+    <aside class="card">
+      <h2>Qué vas a recibir</h2>
+      <div id="wsum"></div>
+      <p class="note">Precios con IVA. Envío a península y Baleares. ¿Prisa o dudas? <a class="wa" href="#" target="_blank" rel="noopener">Escríbenos por WhatsApp</a> o a <a class="mail" href="#">nuestro email</a>.</p>
     </aside>
   </div>
 
@@ -142,8 +172,43 @@ function render() {
 $('#zone').addEventListener('change', render);
 items(); methods(); render();
 
+// ---------- Modo "Apúntame" (SALES_OPEN: false) ----------
+if (C.SALES_OPEN === false) {
+  document.title = 'Reserva tu kit · ' + C.BRAND;
+  $('#form-view').hidden = true; $('#wait-view').hidden = false;
+  if (C.LAUNCH_OFFER) { $('#offer').hidden = false; $('#offer').textContent = C.LAUNCH_OFFER; }
+  $('#wprod').innerHTML = C.PRODUCTS.map(p => `<option value="${p.id}" ${p.id === pre ? 'selected' : ''}>${esc(p.name)} · ${money(p.price)}</option>`).join('') + '<option value="info">Solo quiero información</option>';
+  $('#wsum').innerHTML = C.PRODUCTS.map(p => `<div class="line"><span><b>${esc(p.name)}</b><br><span class="muted" style="font-size:14px">${esc(p.desc)}</span></span><span>${money(p.price)}</span></div>`).join('');
+  const wa = document.querySelector('.wa');
+  if (C.CONTACT_WHATSAPP) wa.href = 'https://wa.me/' + C.CONTACT_WHATSAPP + '?text=' + encodeURIComponent('Hola, me interesa el kit de ' + C.BRAND); else wa.replaceWith(document.createTextNode('escríbenos'));
+  $('#wf').addEventListener('submit', async (e) => {
+    e.preventDefault(); $('#werr').textContent = '';
+    const bad = (id, msg) => { const el = $('#' + id); el.setAttribute('aria-invalid', 'true'); el.focus(); $('#werr').textContent = msg; };
+    if (!$('#wname').value.trim()) return bad('wname', 'Falta tu nombre.');
+    if (!/^\S+@\S+\.\S+$/.test($('#wemail').value)) return bad('wemail', 'Revisa el email: ahí te avisamos.');
+    if ($('#wphone').value.trim() && $('#wphone').value.replace(/\D/g, '').length < 9) return bad('wphone', 'Revisa el teléfono: necesitamos 9 cifras, o déjalo vacío.');
+    if (!$('#wagree').checked) return bad('wagree', 'Marca la casilla para que podamos escribirte.');
+    const w = { name: $('#wname').value.trim(), email: $('#wemail').value.trim(), phone: $('#wphone').value.trim() || null,
+      city: $('#wcity').value.trim() || null, units: Math.min(500, Math.max(1, parseInt($('#wunits').value, 10) || 1)), product: $('#wprod').value };
+    const btn = e.submitter; btn.disabled = true; btn.textContent = 'Apuntando…';
+    try {
+      await TS.joinWaitlist(w);
+      if (C.ORDER_NOTIFY_ENDPOINT) fetch(C.ORDER_NOTIFY_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ _subject: 'Nuevo apuntado: ' + w.name, ...w }) }).catch(() => {});
+      $('#wait-view').hidden = true;
+      const d = $('#done-view'); d.hidden = false;
+      d.innerHTML = `<span class="pill ok">${TSI.svg('check')}Estás en la lista</span><h1>¡Gracias, ${esc(w.name.split(' ')[0])}!</h1>
+        <p class="muted">Te escribiremos a <b>${esc(w.email)}</b>${w.phone ? ' o por WhatsApp' : ''} en cuanto salga la primera tanda, por orden de llegada. No tienes que pagar nada hasta entonces.</p>
+        ${C.LAUNCH_OFFER ? `<p class="offer-line">${esc(C.LAUNCH_OFFER)}</p>` : ''}
+        <h2 style="font-size:22px;margin:24px 0 4px">Mientras tanto</h2>
+        <ol><li><a href="g.html?t=demo">Mira una guía de ejemplo</a>, como la verán tus huéspedes.</li><li>Ve pensando qué pondrías: wifi, llegada, normas, basura y tus sitios favoritos.</li></ol>
+        <p class="muted">¿Dudas? <a href="mailto:${esc(C.CONTACT_EMAIL)}">${esc(C.CONTACT_EMAIL)}</a></p>`;
+      scrollTo(0, 0);
+    } catch (err) { $('#werr').textContent = 'No hemos podido apuntarte. Inténtalo de nuevo o escríbenos a ' + C.CONTACT_EMAIL + '.'; btn.disabled = false; btn.textContent = 'Apuntarme'; }
+  });
+}
+
 function invalid(id, msg) { const el = $('#' + id); if (el) { el.setAttribute('aria-invalid', 'true'); el.focus(); } $('#err').textContent = msg; return false; }
-document.querySelectorAll('input,textarea').forEach(el => el.addEventListener('input', () => el.removeAttribute('aria-invalid')));
+document.querySelectorAll('input,textarea,select').forEach(el => el.addEventListener('input', () => el.removeAttribute('aria-invalid')));
 
 $('#f').addEventListener('submit', async (e) => {
   e.preventDefault(); $('#err').textContent = '';

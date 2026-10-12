@@ -5,11 +5,19 @@
 // los datos se guardan solo en tu navegador (localStorage). Sirve para
 // probarla y hacer capturas. Para lanzarla, rellena los datos de Supabase.
 window.APP_CONFIG = {
+  // MODO DE VENTA
+  //  false = "Apúntame": la gente deja sus datos SIN pagar (lista de espera). Sirve para validar
+  //          sin estar dado de alta en Hacienda. Los apuntados salen en pedidos.html y admin.html.
+  //  true  = pedidos con pago (Bizum, transferencia, PayPal). Antes rellena SELLER_NAME y SELLER_TAX_ID.
+  SALES_OPEN: false,
+  // Gancho para apuntarse (vacío = no se muestra). Cúmplelo: escribe a los apuntados en este orden.
+  LAUNCH_OFFER: "Los 20 primeros apuntados tendrán el kit a 29 € en lugar de 39 €.",
+
   BRAND: "TocToc",                        // nombre provisional: compruébalo en OEPM/EUIPO antes de usarlo
   CONTACT_EMAIL: "oiier.drop@outlook.com",       // tu email de contacto
   CONTACT_WHATSAPP: "34621025971",                   // opcional, p. ej. "34600111222" (sin + ni espacios)
-  SELLER_NAME: "Tu Nombre Apellido",      // titular (aviso legal / facturas)
-  SELLER_TAX_ID: "00000000X",             // tu NIF (el DNI con letra), una vez dado de alta en Hacienda
+  SELLER_NAME: "",                       // titular: OBLIGATORIO antes de poner SALES_OPEN: true
+  SELLER_TAX_ID: "",                     // tu NIF (el DNI con letra), una vez dado de alta en Hacienda
   SELLER_ADDRESS: "Jado 3, 48950 Erandio (Bizkaia)",
 
   // Dirección DEFINITIVA de la web, acabada en "/". Es la que se graba en los chips:

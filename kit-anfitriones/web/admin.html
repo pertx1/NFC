@@ -46,7 +46,7 @@
 <script>
 const { C, $, esc, money } = TS;
 TS.demoBanner(); TS.brand();
-let tab = 'orders';
+let tab = C.SALES_OPEN === false ? 'wait' : 'orders';
 const toast = (m) => { const t = $('#toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); };
 const ST = { pending: ['Pendiente de pago', 'warn'], paid: ['Pagado · por enviar', 'ok'], shipped: ['Enviado', ''], cancelled: ['Cancelado', 'danger'] };
 const PM = { bizum: 'Bizum', transfer: 'Transferencia', paypal: 'PayPal / tarjeta', shopify: 'Shopify' };
@@ -64,13 +64,33 @@ async function boot() {
   render();
 }
 async function render() {
-  $('#view').innerHTML = `<div class="tabs" role="tablist">${[['orders', 'box', 'Pedidos'], ['kits', 'tag', 'Kits y etiquetas'], ['renew', 'euro', 'Renovaciones']].map(([k, ic, t]) => `<button role="tab" data-t="${k}" aria-selected="${k === tab}">${TSI.svg(ic)}${t}</button>`).join('')}</div><div id="pane"></div>`;
+  $('#view').innerHTML = `<div class="tabs" role="tablist">${[['wait', 'mail', 'Lista de espera'], ['orders', 'box', 'Pedidos'], ['kits', 'tag', 'Kits y etiquetas'], ['renew', 'euro', 'Renovaciones']].map(([k, ic, t]) => `<button role="tab" data-t="${k}" aria-selected="${k === tab}">${TSI.svg(ic)}${t}</button>`).join('')}</div><div id="pane"></div>`;
   document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { tab = b.dataset.t; render(); });
-  await ({ orders, kits, renew })[tab]();
+  await ({ wait, orders, kits, renew })[tab]();
 }
 const prodName = (id) => (C.PRODUCTS.find(p => p.id === id) || {}).name || id;
 function tagCount(o) { return (o.items || []).reduce((s, i) => s + i.qty * ({ starter: 4, stickers: 5, pro5: 20 }[i.id] || 0), 0) || 4; }
 
+async function wait() {
+  let ws = [], err = '';
+  try { ws = await TS.listWaitlist(); } catch (e) { err = '<p class="pill warn">No se puede leer la lista de espera: ejecuta supabase/lista-espera.sql en Supabase.</p>'; }
+  const csv = () => { const rows = [['Fecha', 'Nombre', 'Email', 'Teléfono', 'Ciudad', 'Pisos', 'Interés', 'Contactado']].concat(ws.map(w => [new Date(w.created_at).toLocaleString('es-ES'), w.name, w.email, w.phone || '', w.city || '', w.units || 1, w.product || '', w.contacted ? 'sí' : 'no']));
+    const blob = new Blob(['\ufeff' + rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(';')).join('\n')], { type: 'text/csv' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'lista-espera.csv'; a.click(); };
+  $('#pane').innerHTML = `<div class="kpis">
+      <div class="kpi"><span class="muted">Apuntados</span><b>${ws.length}</b></div>
+      <div class="kpi"><span class="muted">Por contactar</span><b>${ws.filter(w => !w.contacted).length}</b></div>
+      <div class="kpi"><span class="muted">Pisos en total</span><b>${ws.reduce((s, w) => s + (w.units || 1), 0)}</b></div></div>
+    <div class="pane">${err}<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:10px"><p class="muted" style="margin:0">${C.SALES_OPEN === false ? 'La web está en modo <b>Apúntame</b> (SALES_OPEN: false). Cuando abras la venta, escribe a cada uno desde la app de pedidos.' : 'La venta está abierta. Escribe a los que se apuntaron antes.'}</p>${ws.length ? '<button class="btn small ghost" id="csv">Descargar CSV</button>' : ''}</div>
+    ${ws.length ? `<table><thead><tr><th>Fecha</th><th>Nombre</th><th>Contacto</th><th>Ciudad</th><th>Pisos</th><th>Interés</th><th></th></tr></thead><tbody>
+    ${ws.map(w => `<tr><td>${new Date(w.created_at).toLocaleDateString('es-ES')}</td><td><b>${esc(w.name)}</b></td>
+      <td><a href="mailto:${esc(w.email)}">${esc(w.email)}</a>${w.phone ? `<br><span class="who">${esc(w.phone)}</span>` : ''}</td>
+      <td>${esc(w.city || '—')}</td><td>${w.units || 1}</td><td>${esc(w.product === 'info' ? 'Información' : prodName(w.product || 'starter'))}</td>
+      <td><button class="btn small ${w.contacted ? 'ghost' : ''}" data-w="${w.id}">${w.contacted ? 'Contactado' : 'Marcar contactado'}</button></td></tr>`).join('')}
+    </tbody></table>` : '<p class="muted">Todavía no se ha apuntado nadie.</p>'}</div>`;
+  const b = $('#csv'); if (b) b.onclick = csv;
+  document.querySelectorAll('[data-w]').forEach(x => x.onclick = async () => { const w = ws.find(y => String(y.id) === x.dataset.w); await TS.updateWaitlist(w.id, { contacted: !w.contacted }); toast('Actualizado'); wait(); });
+}
 async function orders() {
   const os = await TS.listOrders();
   const paid = os.filter(o => o.status === 'paid' || o.status === 'shipped');

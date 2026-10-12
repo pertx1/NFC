@@ -14,6 +14,7 @@ Web estática (HTML + JS) con base de datos en Supabase. Sin Stripe: cobros por 
 | `config.js` | **El único archivo que tienes que editar** |
 | `assets/` | Estilos (sistema "azulejo de portal"), iconos propios y capa de datos |
 | `supabase/schema.sql` | Tablas y permisos: se pega en Supabase > SQL Editor |
+| `supabase/lista-espera.sql` | Lista de espera del modo "Apúntame" (`SALES_OPEN: false`). Ya va dentro de `schema.sql` |
 | `supabase/avisos-telegram.sql` | Opcional: te manda cada pedido por Telegram, aunque la app esté cerrada |
 | `DESIGN.md` | Sistema visual: colores, tipografías, componentes y reglas |
 

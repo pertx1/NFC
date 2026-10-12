@@ -21,16 +21,18 @@
 <main>
   <p class="note"><b>Plantilla.</b> Revísala con tu asesor antes de publicar. Es un punto de partida, no asesoramiento legal.</p>
   <h1>Aviso legal</h1>
-  <p>En cumplimiento de la Ley 34/2002 de Servicios de la Sociedad de la Información (LSSI), te informamos de que esta web pertenece a <b class="sn"></b>, autónomo/a, con NIF <b class="tx"></b> y domicilio en <span class="ad"></span>. Contacto: <a class="em"></a>.</p>
+  <p id="aviso">En cumplimiento de la Ley 34/2002 de Servicios de la Sociedad de la Información (LSSI), te informamos de que esta web pertenece a <b class="sn"></b>, autónomo/a, con NIF <b class="tx"></b> y domicilio en <span class="ad"></span>. Contacto: <a class="em"></a>.</p>
 
   <h2 id="privacidad">Política de privacidad</h2>
-  <p><b>Responsable:</b> <span class="sn"></span> (datos arriba).</p>
+  <p id="resp"><b>Responsable:</b> <span class="sn"></span> (datos arriba).</p>
+  <p><b>Lista de espera.</b> Si te apuntas para reservar un kit, tratamos tu nombre, email, teléfono (si lo das), ciudad y número de pisos solo para avisarte del lanzamiento y responder tus dudas. Base legal: tu consentimiento (art. 6.1.a RGPD), que puedes retirar cuando quieras escribiéndonos. Borramos estos datos cuando te hayamos avisado y no compres, y como máximo a los 12 meses.</p>
   <p><b>Clientes y anfitriones.</b> Cuando haces un pedido o creas tu cuenta tratamos tu nombre, email, teléfono, dirección de envío, NIF o CIF si pides factura, los datos del pedido y los textos que escribes en tu guía. Los usamos para gestionar el pedido y el envío, prestarte el servicio de guía, facturar y atenderte. Base legal: ejecución del contrato (art. 6.1.b RGPD) y obligaciones fiscales (art. 6.1.c). Las facturas se conservan el tiempo que exige la ley; los datos de la cuenta, hasta que la borres.</p>
   <p><b>Huéspedes que tocan una etiqueta.</b> No pedimos ningún dato al huésped ni usamos cookies ni rastreadores en la guía. De cada toque solo guardamos el código de la etiqueta, la hora y el idioma del navegador, para mostrar al anfitrión estadísticas anónimas. No guardamos direcciones IP en nuestra base de datos.</p>
   <p><b>Encargados del tratamiento.</b> Base de datos y alojamiento: Supabase (región UE) y el proveedor de la web; correo: Brevo; pagos: tu banco, Bizum o PayPal (Europe) S.à r.l. et Cie, S.C.A.; avisos de pedido: Formspree. Alguno puede tratar datos fuera del Espacio Económico Europeo con cláusulas contractuales tipo.</p>
   <p><b>Tus derechos.</b> Puedes pedir acceso, rectificación, supresión, limitación, portabilidad u oposición escribiendo a <a class="em"></a>. También puedes reclamar ante la Agencia Española de Protección de Datos (www.aepd.es).</p>
 
   <h2 id="condiciones">Condiciones de venta</h2>
+  <p id="presale" hidden><b>Todavía no vendemos:</b> estas condiciones se aplicarán cuando abramos la venta. Apuntarte a la lista de espera no te obliga a comprar.</p>
   <ul>
     <li><b>Producto.</b> Placa NFC (diseño de azulejo impreso en soporte de metacrilato) y pegatinas NFC preparadas bajo pedido, más acceso al editor de la guía durante 12 meses por kit. La renovación es opcional (<span class="rp"></span> al año por piso). Sin renovar, las etiquetas siguen mostrando una página básica con el wifi.</li>
     <li><b>Precios y pago.</b> Precios en euros con IVA incluido. Pago por Bizum, transferencia o tarjeta mediante PayPal. Fabricamos cuando recibimos el pago.</li>
@@ -50,6 +52,13 @@ q('.brand-name', e => e.textContent = C.BRAND); q('.logo-mark', e => e.innerHTML
 q('.sn', e => e.textContent = C.SELLER_NAME); q('.tx', e => e.textContent = C.SELLER_TAX_ID);
 q('.ad', e => e.textContent = C.SELLER_ADDRESS); q('.em', e => { e.textContent = C.CONTACT_EMAIL; e.href = 'mailto:' + C.CONTACT_EMAIL; });
 q('.rp', e => e.textContent = C.RENEWAL_PRICE + ' €');
+const mail = `<a href="mailto:${C.CONTACT_EMAIL}">${C.CONTACT_EMAIL}</a>`;
+if (!C.SELLER_NAME || !C.SELLER_TAX_ID) {
+  // Sin titular ni NIF (fase de lista de espera): no se muestran datos inventados.
+  document.getElementById('aviso').innerHTML = `Esta web, <b>${C.BRAND}</b>, está en fase de lista de espera: todavía no vende ni cobra. Contacto: ${mail}. Antes de empezar a vender publicaremos aquí el nombre, el NIF y el domicilio del titular, como exige la Ley 34/2002 (LSSI).`;
+  document.getElementById('resp').innerHTML = `<b>Responsable:</b> ${C.BRAND}. Contacto: ${mail}.`;
+}
+if (C.SALES_OPEN === false) document.getElementById('presale').hidden = false;
 </script>
 </body>
 </html>

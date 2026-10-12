@@ -155,6 +155,23 @@
     const { error } = await sb.from("orders").insert(o);
     if (error) throw error; return o;
   }
+  // Lista de espera (SALES_OPEN: false): se apuntan sin pagar
+  async function joinWaitlist(w) {
+    w.created_at = new Date().toISOString();
+    if (DEMO) { const db = demoDb(); (db.waitlist = db.waitlist || []).push({ ...w, id: Date.now() }); save(db); return w; }
+    const { error } = await sb.from("waitlist").insert(w);
+    if (error) throw error; return w;
+  }
+  async function listWaitlist() {
+    if (DEMO) return (demoDb().waitlist || []).slice().reverse();
+    const { data, error } = await sb.from("waitlist").select("*").order("created_at", { ascending: false });
+    if (error) throw error; return data;
+  }
+  async function updateWaitlist(id, patch) {
+    if (DEMO) { const db = demoDb(); Object.assign((db.waitlist || []).find((w) => w.id === id), patch); save(db); return; }
+    const { error } = await sb.from("waitlist").update(patch).eq("id", id);
+    if (error) throw error;
+  }
 
   // ---------- admin (tú) ----------
   async function isAdmin() {
@@ -182,6 +199,7 @@
     }
     const ch = sb.channel("orders-feed")
       .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, (p) => onChange({ type: p.eventType === "INSERT" ? "insert" : "update", order: p.new }))
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "waitlist" }, (p) => onChange({ type: "waitlist", entry: p.new }))
       .subscribe();
     return () => sb.removeChannel(ch);
   }
@@ -242,5 +260,5 @@
 
   window.TS = { C, DEMO, $, $$, esc, linkify, money, slugify, rand, baseUrl, tagUrl, qrSvg, wifiString, demoBanner, brand,
     currentUser, login, logout, getGuide, logTap, myProperties, saveProperty, myTags, updateTag, claimKit, tapStats,
-    createOrder, isAdmin, listOrders, setOrderStatus, updateOrder, subscribeOrders, createKit, listKits, adminProperties, setPaidUntil, resetDemo };
+    createOrder, joinWaitlist, listWaitlist, updateWaitlist, isAdmin, listOrders, setOrderStatus, updateOrder, subscribeOrders, createKit, listKits, adminProperties, setPaidUntil, resetDemo };
 })();
