@@ -9,7 +9,7 @@ window.APP_CONFIG = {
   CONTACT_EMAIL: "hola@ejemplo.es",       // tu email de contacto
   CONTACT_WHATSAPP: "",                   // opcional, p. ej. "34600111222" (sin + ni espacios)
   SELLER_NAME: "Tu Nombre Apellido",      // titular (aviso legal / facturas)
-  SELLER_TAX_ID: "00000000X",             // tu NIF de autónomo
+  SELLER_TAX_ID: "00000000X",             // tu NIF (el DNI con letra), una vez dado de alta en Hacienda
   SELLER_ADDRESS: "Calle Ejemplo 1, 48000 Bilbao (Bizkaia)",
 
   // Dirección DEFINITIVA de la web, acabada en "/". Es la que se graba en los chips:
@@ -33,7 +33,7 @@ window.APP_CONFIG = {
   CURRENCY: "EUR",
   PRODUCTS: [
     { id: "starter", name: "Kit Anfitrión", price: 39,
-      desc: "Azulejo NFC + 3 pegatinas + 12 meses de guía editable" },
+      desc: "Placa azulejo NFC en soporte de metacrilato + 3 pegatinas + 12 meses de guía" },
     { id: "stickers", name: "Pegatinas extra (5)", price: 9,
       desc: "Para cafetera, vitro, lavadora, aire o la puerta" },
     { id: "pro5", name: "Pack Gestor (5 kits)", price: 169,

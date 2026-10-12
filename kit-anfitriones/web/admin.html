@@ -26,7 +26,7 @@
   .kitcard{width:105mm;max-width:100%;min-height:74mm;border:1px dashed #9aa4c2;border-radius:6px;padding:7mm;background:#fff;color:var(--ink);font-size:10.5pt}
   .kitcard h3{font-size:16pt;margin:0 0 2mm}
   .kitcard .code{font:700 19pt ui-monospace,Consolas,monospace;letter-spacing:.06em;margin:3mm 0;color:var(--cobalt-ink)}
-  .plq{width:220px;border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+  .plq{width:200px;border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
   @media print{body *{visibility:hidden}.printable,.printable *{visibility:visible}.printable{position:absolute;left:0;top:0}.demo-banner{display:none}}
   td .btn{margin:2px 4px 2px 0}
   .who{font-size:13px;color:var(--muted)}
@@ -101,51 +101,87 @@ async function kits() {
   $('#nk').onclick = async () => { const r = await TS.createKit(null, +$('#nn').value || 4); await kits(); showKit(r.kit, r.tags); };
   document.querySelectorAll('[data-s]').forEach(b => b.onclick = () => { const k = ks.find(x => x.code === b.dataset.s); showKit(k, k.tags || []); });
 }
-function showKit(kit, tags) {
+async function showKit(kit, tags) {
   const panelUrl = TS.baseUrl() + 'panel.html';
   const url0 = tags[0] ? TS.tagUrl(tags[0].code) : TS.baseUrl();
-  $('#kitout').innerHTML = `<div class="kitbox">
-    <h3>Kit ${esc(kit.code)}</h3>
-    ${TS.C.SITE_URL ? '' : '<p class="pill warn" style="margin:0 0 8px">Ojo: SITE_URL está vacío. No grabes chips de clientes con estas URLs.</p>'}
-    <h4>1. Graba estas URLs, una por etiqueta y en este orden (la primera va en el azulejo)</h4>
-    <div class="urls">${tags.map((t, i) => `${i + 1}. ${esc(t.label || '')}  →  ${esc(TS.tagUrl(t.code))}`).join('\n')}</div>
-    <button class="btn small ghost" id="cpu">${TSI.svg('copy')}Copiar URLs</button>
-    <div class="kitgrid" style="margin-top:6px">
-      <div><h4>2. Tarjeta de activación (va en la caja)</h4>
-        <div class="printable"><div class="kitcard">
+  let finish = 'Cobalto clásico';
+  if (kit.order_ref) { try { const o = (await TS.listOrders()).find(x => x.ref === kit.order_ref); if (o && o.finish) finish = o.finish; } catch (e) {} }
+  const card = `<div class="kitcard">
           <h3>¡Bienvenido a ${esc(C.BRAND)}!</h3><div>Activa tu guía en 3 minutos:</div>
           <ol style="padding-left:18px;margin:2mm 0"><li>Entra en <b>${esc(panelUrl.replace(/^https?:\/\//, ''))}</b></li><li>Escribe tu email</li><li>Introduce este código:</li></ol>
           <div class="code">${esc(kit.code)}</div>
           <div style="display:flex;gap:4mm;align-items:center"><div style="width:22mm;flex:none">${TS.qrSvg(panelUrl)}</div><small>Escanea para abrir tu panel. ¿Dudas? ${esc(C.CONTACT_EMAIL)}</small></div>
-        </div></div>
-        <p><button class="btn small" onclick="print()">Imprimir tarjeta</button></p></div>
-      <div><h4>3. Diseño del azulejo para el taller (10 × 10 cm, con el QR de este kit)</h4>
-        <div class="plq">${plaqueSvg(url0).replace('width="100mm" height="100mm"', 'width="100%" style="display:block"')}</div>
-        <p><button class="btn small ghost" id="dlp">Descargar azulejo (SVG)</button></p></div>
+        </div>`;
+  $('#kitout').innerHTML = `<div class="kitbox">
+    <h3>Kit ${esc(kit.code)}</h3>
+    ${TS.C.SITE_URL ? '' : '<p class="pill warn" style="margin:0 0 8px">Ojo: SITE_URL está vacío. No grabes chips de clientes con estas URLs.</p>'}
+    <h4>1. Graba estas URLs, una por etiqueta y en este orden (la primera va detrás de la placa)</h4>
+    <div class="urls">${tags.map((t, i) => `${i + 1}. ${esc(t.label || '')}  →  ${esc(TS.tagUrl(t.code))}`).join('\n')}</div>
+    <button class="btn small ghost" id="cpu">${TSI.svg('copy')}Copiar URLs</button>
+    <div class="kitgrid" style="margin-top:6px">
+      <div><h4>2. Placa (10 × 14 cm, para soporte de metacrilato A6) · ${esc(finish)}</h4>
+        <div class="plq">${plaqueSvg(url0, finish).replace('width="100mm" height="140mm"', 'width="100%" style="display:block"')}</div>
+        <p style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" id="pa4">Imprimir hoja A4 del kit</button><button class="btn small ghost" id="dlp">Descargar placa (SVG)</button></p>
+        <p class="muted" style="font-size:13px;max-width:34em">Imprime al <b>100 %</b> («Tamaño real», sin «Ajustar a página»). La hoja lleva la placa y la tarjeta de activación con líneas de corte. El chip se pega detrás del círculo de puntos.</p></div>
+      <div><h4>3. Tarjeta de activación (va en la caja)</h4>
+        <div class="printable">${card}</div>
+        <p><button class="btn small ghost" onclick="print()">Imprimir solo la tarjeta</button></p></div>
     </div></div>`;
-  $('#dlp').onclick = () => { const blob = new Blob([plaqueSvg(url0)], { type: 'image/svg+xml' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `azulejo-${kit.code}.svg`; a.click(); };
+  $('#dlp').onclick = () => { const blob = new Blob([plaqueSvg(url0, finish)], { type: 'image/svg+xml' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `placa-${kit.code}.svg`; a.click(); };
+  $('#pa4').onclick = () => printSheet(kit, plaqueSvg(url0, finish), card);
   $('#cpu').onclick = () => navigator.clipboard.writeText(tags.map(t => TS.tagUrl(t.code)).join('\n')).then(() => toast('URLs copiadas'));
   $('#kitout').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
-// Azulejo 100×100 mm: cenefa cobalto, onda NFC y QR de respaldo (misma URL que el chip).
-function plaqueSvg(url) {
+// Hoja A4 a tamaño real: placa 100×140 mm + tarjeta de activación, con líneas de corte.
+function printSheet(kit, svg, card) {
+  const w = window.open('', '_blank');
+  if (!w) { toast('Permite las ventanas emergentes para imprimir'); return; }
+  w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Kit ${esc(kit.code)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&family=Young+Serif&display=swap" rel="stylesheet">
+<style>@page{size:A4;margin:0}*{box-sizing:border-box}body{margin:0;background:#fff;font-family:Figtree,Arial,sans-serif;color:#0d1b47;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.sheet{width:210mm;height:297mm;padding:12mm 10mm}
+.cut{outline:.2mm dashed #9aa4c2;width:max-content}
+.cut svg{display:block}
+.row{display:flex;gap:6mm;align-items:flex-start}
+.kitcard{width:84mm;min-height:74mm;padding:6mm;font-size:10pt}.kitcard h3{font-family:'Young Serif',Georgia,serif;font-weight:400;font-size:15pt;margin:0 0 2mm}
+.kitcard .code{font:700 18pt ui-monospace,Consolas,monospace;letter-spacing:.06em;margin:3mm 0}.kitcard svg{width:100%;height:auto}
+.help{font-size:9pt;color:#4f5b78;max-width:84mm;line-height:1.45}.help b{color:#0d1b47}
+</style></head><body><div class="sheet">
+<div class="row"><div class="cut">${svg}</div><div style="display:flex;flex-direction:column;gap:6mm"><div class="cut">${card}</div>
+<div class="help"><b>Montaje</b><br>1. Recorta por las líneas de puntos.<br>2. Pega el chip NFC de la primera URL detrás del círculo de puntos.<br>3. Mete la placa en el soporte con el chip hacia atrás y prueba con dos móviles.<br>4. La tarjeta de activación va en la caja.</div></div></div>
+</div><script>document.fonts.ready.then(() => setTimeout(() => print(), 300))<\/script></body></html>`);
+  w.document.close();
+}
+// Placa 100×140 mm: cenefa de azulejo, zona de toque (el chip va detrás del círculo) y QR de respaldo (misma URL que el chip).
+function plaqueSvg(url, finish) {
   const q = qrcode(0, 'M'); q.addData(url); q.make();
-  const n = q.getModuleCount(), size = 24, cell = size / n; let rects = '';
+  const n = q.getModuleCount(), size = 26, cell = size / n; let rects = '';
   for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) rects += `<rect x="${(c * cell).toFixed(3)}" y="${(r * cell).toFixed(3)}" width="${(cell + .01).toFixed(3)}" height="${(cell + .01).toFixed(3)}"/>`;
+  const plain = /blanco/i.test(finish || ''), ink = /verde/i.test(finish || '') ? '#23715f' : '#1f3f9e';
   const motif = (x, y) => `<g transform="translate(${x} ${y})"><path d="M0 2.5A2.5 2.5 0 0 0 2.5 0M7.5 0A2.5 2.5 0 0 0 10 2.5M10 7.5A2.5 2.5 0 0 0 7.5 10M2.5 10A2.5 2.5 0 0 0 0 7.5" fill="none" stroke="#fff" stroke-width=".55"/><path d="M5 2 8 5 5 8 2 5Z" fill="none" stroke="#fff" stroke-width=".55"/><circle cx="5" cy="5" r=".8" fill="#e9b23a"/></g>`;
-  let band = '';
-  for (let i = 0; i < 10; i++) { band += motif(i * 10, 0) + motif(i * 10, 90); }
-  for (let i = 1; i < 9; i++) { band += motif(0, i * 10) + motif(90, i * 10); }
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="100mm" viewBox="0 0 100 100">
-  <rect width="100" height="100" rx="3" fill="#fbfcff"/>
-  <path d="M0 0h100v10H0zM0 90h100v10H0zM0 10h10v80H0zM90 10h10v80H90z" fill="#1f3f9e"/>${band}
-  <g fill="none" stroke="#1f3f9e" stroke-width="2.6" stroke-linecap="round"><path d="M18 38a19 19 0 0 1 27 0"/><path d="M23.5 44a11 11 0 0 1 16 0"/></g>
-  <circle cx="31.5" cy="50.5" r="2.6" fill="#e9b23a"/>
-  <text x="31.5" y="64" font-family="Young Serif,Georgia,serif" font-size="8" fill="#0d1b47" text-anchor="middle">Toca aquí</text>
-  <text x="31.5" y="71" font-family="Figtree,Arial,sans-serif" font-size="3.6" fill="#4f5b78" text-anchor="middle">wifi · guía de la casa</text>
-  <g transform="translate(58 24)"><rect x="-2" y="-2" width="28" height="28" rx="1.5" fill="#fff" stroke="#c9d3f2" stroke-width=".4"/><g fill="#0d1b47">${rects}</g></g>
-  <text x="70" y="59" font-family="Figtree,Arial,sans-serif" font-size="3.4" fill="#4f5b78" text-anchor="middle">o escanea</text>
-  <text x="50" y="81.5" font-family="Figtree,Arial,sans-serif" font-size="3" fill="#4f5b78" text-anchor="middle">Tap · Toucher · Tippen · Toccare</text>
+  let frame;
+  if (plain) frame = `<rect x="5" y="5" width="90" height="130" rx="2" fill="none" stroke="${ink}" stroke-width=".8"/><rect x="7" y="7" width="86" height="126" rx="1.4" fill="none" stroke="${ink}" stroke-width=".3"/>`;
+  else {
+    let band = '';
+    for (let i = 0; i < 10; i++) band += motif(i * 10, 0) + motif(i * 10, 130);
+    for (let i = 1; i < 13; i++) band += motif(0, i * 10) + motif(90, i * 10);
+    frame = `<path d="M0 0h100v10H0zM0 130h100v10H0zM0 10h10v120H0zM90 10h10v120H90z" fill="${ink}"/>${band}`;
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="140mm" viewBox="0 0 100 140">
+  <rect width="100" height="140" fill="#fbfcff"/>${frame}
+  <text x="50" y="25" font-family="Young Serif,Georgia,serif" font-size="6.4" fill="#0d1b47" text-anchor="middle">Bienvenido · Welcome</text>
+  <text x="50" y="31.5" font-family="Figtree,Arial,sans-serif" font-size="3.4" fill="#4f5b78" text-anchor="middle">Wifi y guía de la casa en tu idioma</text>
+  <circle cx="31" cy="60" r="13.5" fill="none" stroke="#b9c5ec" stroke-width=".5" stroke-dasharray="1.2 1.2"/>
+  <g fill="none" stroke="${ink}" stroke-width="2.4" stroke-linecap="round"><path d="M19 56a17 17 0 0 1 24 0"/><path d="M24 61.5a10 10 0 0 1 14 0"/></g>
+  <circle cx="31" cy="67" r="2.4" fill="#e9b23a"/>
+  <text x="31" y="83" font-family="Young Serif,Georgia,serif" font-size="7.2" fill="#0d1b47" text-anchor="middle">Toca aquí</text>
+  <g transform="translate(57 46)"><rect x="-2" y="-2" width="30" height="30" rx="1.5" fill="#fff" stroke="#c9d3f2" stroke-width=".4"/><g fill="#0d1b47">${rects}</g></g>
+  <text x="70" y="83" font-family="Figtree,Arial,sans-serif" font-size="3.6" fill="#4f5b78" text-anchor="middle">o escanea</text>
+  <path d="M18 92h64" stroke="#c9d3f2" stroke-width=".35"/>
+  <text x="50" y="101" font-family="Figtree,Arial,sans-serif" font-size="3.5" fill="#0d1b47" text-anchor="middle">Wifi · normas · check-in · recomendaciones</text>
+  <text x="50" y="108" font-family="Figtree,Arial,sans-serif" font-size="3" fill="#4f5b78" text-anchor="middle">Tap · Toucher · Tippen · Toccare · Tocar</text>
+  <text x="50" y="117" font-family="Figtree,Arial,sans-serif" font-size="2.8" fill="#4f5b78" text-anchor="middle">iPhone: acerca la parte de arriba del móvil</text>
+  <text x="50" y="122.5" font-family="Figtree,Arial,sans-serif" font-size="2.8" fill="#4f5b78" text-anchor="middle">Android: el centro de la parte de atrás</text>
 </svg>`;
 }
 async function renew() {

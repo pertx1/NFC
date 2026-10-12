@@ -6,7 +6,7 @@
 
 ### Qué vendes
 Un **azulejo NFC para la entrada de un piso turístico**:
-- azulejo de 10 × 10 cm con cenefa de cobalto, chip NFC y QR de respaldo;
+- placa de 10 × 14 cm con diseño de azulejo, impresa por ti y montada en un **soporte de metacrilato A6**, con el chip NFC detrás y un QR de respaldo;
 - 3 pegatinas NFC para la cafetera, el aire o la puerta;
 - 12 meses de **guía digital editable**: wifi, llegada, electrodomésticos, normas, recomendaciones y enlace al check-in online, en 7 idiomas.
 
@@ -26,11 +26,11 @@ El huésped (casi siempre extranjero) acerca el móvil y ve la guía en su idiom
 | `web/order.html` | Pedido + pago con **Bizum, transferencia o tarjeta (PayPal)**; envío a península o Baleares |
 | `web/g.html` | Lo que ve el huésped: 7 idiomas, wifi con botón de copiar, botón de registro de viajeros y nº de registro turístico |
 | `web/panel.html` | Panel del anfitrión: activar kit, guía con iconos, wifi, etiquetas y estadísticas |
-| `web/admin.html` | **Tu** panel: pedidos, crear kits, diseño del azulejo con su QR, renovaciones |
+| `web/admin.html` | **Tu** panel: pedidos, crear kits, **hoja A4 imprimible** (placa + tarjeta de activación) y renovaciones |
 | `web/legal.html` | Aviso legal (LSSI), privacidad (RGPD) y condiciones de venta (plantilla) |
 | `web/config.js` | **El único archivo que editas** |
 | `web/supabase/schema.sql` | Base de datos con sus permisos |
-| `plantillas/` | Azulejo de ejemplo (SVG) y hoja A4 de pegatinas de 30 mm |
+| `plantillas/` | Hoja A4 de un kit de ejemplo (PDF), azulejo de ejemplo (SVG) y hoja de pegatinas de 30 mm |
 
 Abre `web/index.html` con doble clic: funciona en **modo demo** sin conectar nada.
 
@@ -43,7 +43,7 @@ Las placas NFC de reseñas en Amazon.es cuestan 17-35 € (búsqueda del 11-10-2
 
 | Producto | Precio (IVA incluido) | Qué incluye |
 |---|---|---|
-| Kit Anfitrión | **39 €** | Azulejo + 3 pegatinas + 12 meses de guía |
+| Kit Anfitrión | **39 €** | Placa en soporte de metacrilato + 3 pegatinas + 12 meses de guía |
 | Pegatinas extra | **9 €** | 5 pegatinas NFC |
 | Pack Gestor | **169 €** | 5 kits con un único acceso |
 | Renovación | **24 €/año** | Desde el mes 13; sin renovar, el azulejo sigue mostrando el wifi |
@@ -55,10 +55,11 @@ Las placas NFC de reseñas en Amazon.es cuestan 17-35 € (búsqueda del 11-10-2
 |---|---|
 | Precio cobrado (sin envío) | 39,00 |
 | − IVA 21 % (39 / 1,21) | −6,77 |
-| − Azulejo (taller) | −4,50 [E] |
+| − Soporte de metacrilato A6 (en packs) | −1,50 [E] |
+| − Cartulina y tinta (una hoja A4 a color) | −0,40 [E] |
 | − 4 chips (70 por 7,99 € en Amazon.es = 0,11 € cada uno) | −0,46 |
 | − Caja, tarjeta y adhesivo | −1,20 [E] |
-| **Margen por kit** | **≈ 26 €** |
+| **Margen por kit** | **≈ 28 €** |
 
 Con tarjeta vía PayPal resta además 2,9 % + 0,35 € (unos 1,6 €) [1]. El envío lo cobras aparte.
 
@@ -66,11 +67,12 @@ Con tarjeta vía PayPal resta además 2,9 % + 0,35 € (unos 1,6 €) [1]. El en
 | Compra | € | Cuándo |
 |---|---|---|
 | 70 pegatinas NTAG213 (Amazon.es, 7,99 €) | 7,99 | Día 2 |
-| Prototipo del azulejo: impresión en papel fotográfico + marco de 13×13 cm sin metal, o un azulejo blanco de 10×10 cm de una tienda de bricolaje | ~4 [E] | Día 8 |
-| **Total de tu bolsillo** | **~12 €** | |
-| Colchón | ~13 € | Imprevistos |
+| Soportes de metacrilato A6 vertical, pack de 5-10 (Amazon.es, AliExpress o tienda de manualidades) | ~8-14 [E] | Día 8 |
+| Cartulina blanca 250 g o papel fotográfico mate A4 (si ya tienes impresora) | ~3 [E] | Día 8 |
+| **Total de tu bolsillo** | **~19-25 €** | |
+| Colchón | 0-6 € | Si no tienes impresora: copistería, ~1 € por hoja a color [E] |
 | Dominio `.es` (~10 €/año [E]) | — | **Con el primer cobro**, día 22 |
-| Azulejos de taller, cajas, envíos | — | **Con el dinero de cada pedido** |
+| Más soportes, cajas y envíos | — | **Con el dinero de cada pedido** |
 
 **Gratis:**
 - Supabase, plan gratuito (se pausa tras una semana sin uso) [5].
@@ -85,6 +87,7 @@ Con tarjeta vía PayPal resta además 2,9 % + 0,35 € (unos 1,6 €) [1]. El en
 2. **La URL grabada en un chip es para siempre**: pon tu dominio definitivo en `config.js` antes del primer chip de un cliente (día 22).
 3. **Con 2 horas al día, cada día tiene una sola meta.**
 4. **Hay fechas para decidir**: días 21, 56 y 90.
+5. **Antes de cobrar en serio, alta en Hacienda.** Si no eres autónomo, lee el **anexo E** antes del día 22.
 
 ---
 
@@ -132,7 +135,7 @@ Con tarjeta vía PayPal resta además 2,9 % + 0,35 € (unos 1,6 €) [1]. El en
 #### Día 3 · Cobros: Bizum, transferencia y PayPal
 🎯 Poder cobrar por tres vías. ⏱️ 2 h
 ✅ Tareas:
-1. Pregunta a tu banco si tu cuenta de autónomo admite **Bizum para cobros de tu actividad** (algunos bancos lo ofrecen para autónomos o comercios). Pon el móvil en `BIZUM_PHONE`.
+1. Pregunta a tu banco si tu cuenta admite **Bizum para cobros de tu actividad** (algunos bancos lo ofrecen para autónomos o comercios). Pon el móvil en `BIZUM_PHONE`.
 2. Pon tu IBAN y titular en `IBAN` e `IBAN_HOLDER` (mejor una cuenta separada para el negocio).
 3. Crea **PayPal Business** (gratis) y tu enlace **PayPal.me** → `PAYPAL_ME`. Comprueba en incógnito que aparece "Pagar con tarjeta".
 4. Apunta las comisiones: Bizum y transferencia 0 €; PayPal 2,9 % + 0,35 € [1].
@@ -205,30 +208,35 @@ Con tarjeta vía PayPal resta además 2,9 % + 0,35 € (unos 1,6 €) [1]. El en
 
 ### Semana 2 · Producto físico y material de venta
 
-#### Día 8 · Prototipo del azulejo
-🎯 Un azulejo que se pueda fotografiar. ⏱️ 2 h
+#### Día 8 · Prototipo de la placa
+🎯 Una placa montada que se pueda fotografiar y que lea bien. ⏱️ 2 h
 ✅ Tareas:
-1. Descarga el diseño desde `admin.html → Kits → Descargar azulejo (SVG)` o usa `plantillas/azulejo-10x10-ejemplo.svg`.
+1. Compra un pack de **soportes de metacrilato A6 vertical** (105 × 148 mm). Valen los de tipo **"en L"** (una cara, más baratos) o **"en T"** (dos caras: imprime la hoja dos veces). Que **no** tengan base metálica.
+2. En `admin.html → Kits → Crear kit suelto → Imprimir hoja A4 del kit`. Sale una hoja con la placa (100 × 140 mm) y la tarjeta de activación. También tienes un ejemplo en `plantillas/hoja-kit-ejemplo.pdf`.
 
-<img class="half" src="img/placa.png" alt="Diseño del azulejo">
+<img class="half" src="img/placa.png" alt="Placa imprimible">
 
-2. Opciones de prototipo:
-   - **(a)** imprímelo a 10×10 cm en papel fotográfico y mételo en un marco sin metal;
-   - **(b)** compra un azulejo blanco de 10×10 cm en una tienda de bricolaje y pega encima el diseño en vinilo impreso.
-3. Pega el chip **detrás del símbolo del wifi** y prueba la lectura con 3 móviles, con funda.
+3. Imprime al **100 %** ("Tamaño real", nunca "Ajustar a página") en **cartulina de 250 g** o papel fotográfico **mate** (el brillante hace reflejos dentro del metacrilato).
+4. Recorta por la línea de puntos con cúter y regla. Pega un chip **detrás del círculo de puntos**, por la cara de atrás del papel.
+5. Mete la placa en el soporte con el chip hacia atrás y prueba la lectura con **3 móviles, con funda**: iPhone, Android y uno antiguo.
+
+![Hoja A4 del kit](img/admin-placa.png)
 
 🧨 Paranoia:
-- **Grosor:** un azulejo cerámico de ~6-8 mm suele dejar leer, pero **pruébalo**. Si no lee, pon el chip delante, bajo el vinilo.
-- **Metal:** marcos con trasera metálica y tornillería bloquean la lectura.
+- **Distancia:** el móvil queda a 2-4 mm del chip (metacrilato + papel). Un NTAG213 de 25-30 mm lee bien a esa distancia; uno de 13-20 mm puede fallar. **Pruébalo.**
+- **Metal:** nada de bases, marcos ni tornillos metálicos cerca del chip. Si el anfitrión lo pone sobre una mesa metálica, que use la pegatina antimetal.
+- **Tinta:** al sol la tinta normal de inyección se decolora en meses. Mejor **láser** o **tinta pigmentada**, y recomienda no ponerlo junto a una ventana.
+- **QR:** escanéalo ya impreso y dentro del soporte: si hay reflejos, inclina el soporte o usa papel mate.
 
-#### Día 9 · Taller para los azulejos definitivos
-🎯 2-3 presupuestos (sin pagar nada). ⏱️ 2 h
+#### Día 9 · Acabado profesional y proveedor de soportes
+🎯 Que parezca un producto de 39 €, no una manualidad. ⏱️ 2 h
 ✅ Tareas:
-1. Busca talleres de **impresión UV sobre azulejo**, de serigrafía cerámica o de vinilo sobre azulejo en tu zona. Alternativa: metacrilato de 3 mm o madera con impresión UV.
-2. Envía el SVG (plantilla C.9) y pide precio por 1, 10 y 50 unidades, plazo y envío.
-3. Objetivo: **menos de 5 € por pieza** en tiradas de 10.
+1. **Corte limpio:** cúter nuevo, regla metálica y alfombrilla de corte (~5 € [E]). Las esquinas rectas importan más que el papel.
+2. **Compara 2-3 proveedores de soportes** por precio con envío: Amazon.es (rápido), AliExpress (más barato, 2-3 semanas) y tiendas de expositores de metacrilato. Objetivo: **menos de 1,50 € por soporte** en packs de 10-20.
+3. Fotografía el prototipo con luz de ventana sobre una mesa de madera: será la foto principal de la web (día 11).
+4. Decide los tres acabados que ofrece la web (`order.html`): **Cobalto clásico**, **Verde mudéjar** y **Blanco liso**. El panel genera cada placa con el color del pedido.
 
-🧨 Paranoia: no pagues una tirada sin una muestra física probada con el chip.
+🧨 Paranoia: no compres 50 soportes hasta que el prototipo lea con 3 móviles distintos. Y quita el **film protector** del metacrilato solo al final: se raya con nada.
 
 #### Día 10 · Una guía de ejemplo de verdad
 🎯 Demo convincente. ⏱️ 2 h
@@ -273,8 +281,8 @@ Con tarjeta vía PayPal resta además 2,9 % + 0,35 € (unos 1,6 €) [1]. El en
 ✅ Tareas:
 1. Revisa `legal.html` (aviso legal LSSI, privacidad RGPD y condiciones).
 2. Mira tarifas en **Correos** (paquetería nacional) y en comparadores como **Packlink**. Ajusta `SHIPPING`.
-3. Elige herramienta de facturas. **Verifactu será obligatorio para autónomos desde el 1-7-2027** [13].
-4. Pregunta a tu gestor: IVA 21 %, factura a gestoras con CIF, Bizum en la cuenta de autónomo y envíos a Canarias.
+3. **Facturas:** lee el **anexo E** y decide cómo vas a vender (alta en Hacienda, con o sin cuota de autónomo). **Verifactu será obligatorio desde el 1-7-2027** [13].
+4. Pregunta a un gestor (una consulta suelta cuesta poco): epígrafe del IAE, IVA 21 %, factura a gestoras con CIF, Bizum para cobros de negocio y envíos a Canarias.
 
 🧨 Paranoia: el IVA está incluido en el precio: de 39 € solo 32,23 € son tuyos. Guarda el IVA para el modelo 303.
 
@@ -338,30 +346,30 @@ Con tarjeta vía PayPal resta además 2,9 % + 0,35 € (unos 1,6 €) [1]. El en
 
 🧨 Paranoia: crea los kits **después** de este paso. El panel de vendedor te avisa si `SITE_URL` está vacío.
 
-#### Día 23 · Encargar azulejos
-🎯 Azulejos encargados con el dinero de los pedidos. ⏱️ 1,5 h
-✅ `admin.html` → **Crear kit** → **Descargar azulejo (SVG)** por pedido. Cada azulejo lleva su propio QR.
+#### Día 23 · Imprimir las placas
+🎯 Placas impresas con el dinero de los pedidos. ⏱️ 1,5 h
+✅ `admin.html` → **Crear kit** del pedido → **Imprimir hoja A4 del kit**. Cada placa lleva su propio QR y el color que eligió el cliente.
 
 ![Kit creado](img/web-admin-kit.png)
 
-🧨 Paranoia: nombra los archivos `azulejo-KIT-XXXXXX.svg`. Si mezclas azulejos entre clientes, el QR abrirá la guía de otro.
+🧨 Paranoia: imprime y monta **un kit cada vez**. Si mezclas hojas entre clientes, el QR y el chip abrirán la guía de otro.
 
 #### Día 24 · Grabar y bloquear los chips
 🎯 Chips grabados, probados y bloqueados. ⏱️ 2 h
-✅ Sigue el **anexo A**: chip 1 en el azulejo y chips 2-4 en las pegatinas. Apunta cada uno en la hoja.
+✅ Sigue el **anexo A**: chip 1 detrás de la placa y chips 2-4 en las pegatinas. Apunta cada uno en la hoja.
 
 🧨 Paranoia: el bloqueo es irreversible. Graba, prueba en 2 móviles y solo después bloquea.
 
 #### Día 25 · Montaje y caja
 🎯 Kits listos. ⏱️ 2 h
 ✅ Tareas:
-1. Pega el chip y pon el adhesivo.
+1. Recorta la placa, pega el chip 1 detrás del círculo de puntos y métela en el soporte.
 2. Imprime la **tarjeta de activación**, en español.
 3. Imprime la hoja de pegatinas decorativas (`plantillas/pegatinas-30mm-A4.svg`).
 
 <img class="half" src="img/pegatinas.png" alt="Hoja de pegatinas">
 
-4. Caja con azulejo envuelto, pegatinas, tarjeta y factura. Prueba final con el móvil.
+4. Caja con la placa en su soporte (con el film protector puesto), pegatinas, tarjeta y factura o justificante. Prueba final con el móvil antes de cerrar.
 
 #### Día 26 · Envío
 🎯 Paquetes en camino. ⏱️ 2 h
@@ -456,9 +464,9 @@ Con tarjeta vía PayPal resta además 2,9 % + 0,35 € (unos 1,6 €) [1]. El en
 | iPhone XS o posterior, desbloqueado | Notificación → abre la guía |
 | Android con NFC activado | Abre el navegador |
 | Con funda normal | Lee a 1-2 cm |
-| Detrás de un azulejo cerámico o de 3 mm de acrílico | Lee (pruébalo con tu azulejo) |
+| Chip detrás del papel, dentro del soporte de metacrilato | Lee a 2-4 mm (pruébalo con tu soporte) |
 | Sobre metal (pegatina normal) | **No lee**: usa antimetal |
-| QR del azulejo | Abre la misma guía |
+| QR de la placa | Abre la misma guía |
 
 ## Anexo B · Puesta en marcha técnica (resumen)
 1. `config.js`: marca, contacto, NIF, `SITE_URL`, Supabase, Bizum, IBAN, PayPal y Formspree.
@@ -477,7 +485,7 @@ Con tarjeta vía PayPal resta además 2,9 % + 0,35 € (unos 1,6 €) [1]. El en
 ## Anexo C · Plantillas de textos
 
 **C.1 · Texto para la web, Instagram o un anuncio**
-> Azulejo NFC para la entrada de tu piso turístico. Tus huéspedes acercan el móvil y ven el wifi, la llegada, las normas y el enlace al registro de viajeros en su idioma. Lo cambias todo desde el móvil, sin reimprimir. Incluye azulejo de 10 × 10 cm con QR, 3 pegatinas NFC y 12 meses de guía editable en 7 idiomas. 39 € con envío en 2-3 días a península y Baleares.
+> Azulejo NFC para la entrada de tu piso turístico. Tus huéspedes acercan el móvil y ven el wifi, la llegada, las normas y el enlace al registro de viajeros en su idioma. Lo cambias todo desde el móvil, sin reimprimir. Incluye placa con diseño de azulejo en soporte de metacrilato, con QR, 3 pegatinas NFC y 12 meses de guía editable en 7 idiomas. 39 € con envío en 2-3 días a península y Baleares.
 
 **C.2 · Primer mensaje a un anfitrión**
 > ¡Hola, {nombre}! He visto {tu piso en…/tu publicación sobre…}. Una pregunta rápida: ¿tus huéspedes te siguen escribiendo por el wifi o por cómo funciona el aire? Hago azulejos NFC para la entrada: el huésped acerca el móvil y ve el wifi y la guía de la casa en su idioma, y tú lo cambias desde el móvil cuando quieras. Busco 10 "anfitriones fundadores" en {ciudad} con un 30 % de descuento a cambio de tu opinión. ¿Te mando un vídeo de 15 segundos?
@@ -500,23 +508,47 @@ Con tarjeta vía PayPal resta además 2,9 % + 0,35 € (unos 1,6 €) [1]. El en
 **C.8 · Renovación (30 días antes)**
 > Hola, {nombre}. La guía de {piso} está activa hasta el {fecha}. Para mantener la guía completa, las pegatinas y las estadísticas otro año, la renovación son 24 €: Bizum al {móvil} o transferencia con el concepto "Renovación {piso}". Si no renuevas, el azulejo seguirá mostrando tu wifi.
 
-**C.9 · Petición de presupuesto al taller**
-> Hola, necesito azulejos de 10 × 10 cm (cerámica blanca, o metacrilato de 3 mm como alternativa) con impresión UV a color según el SVG adjunto, sin piezas metálicas y con adhesivo de doble cara detrás. ¿Precio por 1, 10 y 50 unidades, plazo y envío? Cada pieza lleva un QR distinto: os mandaría un SVG por unidad.
+**C.9 · Petición de presupuesto de soportes (cuando vendas más de 20 al mes)**
+> Hola, necesito expositores de metacrilato transparente de 2-3 mm, tamaño A6 vertical (105 × 148 mm), en L, sin piezas metálicas. ¿Precio por 20, 50 y 100 unidades, plazo y envío a [ciudad]?
 
 ## Anexo D · Envíos
-- **Embalaje:** caja plana con cartón de protección, porque el azulejo cerámico se puede romper. Peso aproximado del kit: 250-400 g si es cerámico [E].
+- **Embalaje:** caja plana o sobre acolchado grande, con el soporte envuelto y el film protector puesto. Peso aproximado del kit: 120-200 g [E], así que entra en las tarifas más baratas.
 - **Seguimiento siempre**, con Correos o Packlink.
 - **Península y Baleares:** 24-72 h según el servicio [E].
 - **Canarias, Ceuta y Melilla:** DUA e IGIC o IPSI a cargo del destinatario [18]. Atiende por email y con el coste total cerrado antes.
-- **Rotura:** si llega roto, reponlo (foto del cliente). Cuenta un 3-5 % de roturas en el margen [E].
+- **Rotura o arañazos:** si llega dañado, repón el soporte (foto del cliente). Te cuesta menos de 2 €.
 
-## Anexo E · Facturas e impuestos (🔍 confirma con tu gestor)
-- **Factura por cada venta**, con número correlativo, tus datos, NIF, base, IVA 21 % y total. A gestoras, con su CIF.
+## Anexo E · Facturas si no eres autónomo (🔍 confirma con un gestor)
+
+**Lo corto:** sin estar dado de alta en Hacienda **no puedes emitir facturas**. Lo que sí puede esperar, según tu caso, es la cuota de autónomo de la Seguridad Social. Son dos altas distintas [19][20].
+
+| Trámite | ¿Obligatorio? | Coste | Qué te permite |
+|---|---|---|---|
+| **Alta en Hacienda** (censo, modelo 036) | **Sí**, para cualquier actividad económica, aunque ganes poco [19] | 0 € (online con Cl@ve o certificado) | Facturar, cobrar como negocio, IVA |
+| **Alta en la Seguridad Social** (RETA, "ser autónomo") | Si la actividad es **habitual**. Ganar menos del SMI es un indicio de que no lo es, pero **no** una exención automática [20] | Tarifa plana: unos **89 €/mes** en 2026 durante 12 meses (después, según ingresos) [21] | Cotizar (jubilación, bajas) y evitar reclamaciones |
+
+**Cómo hacerlo, paso a paso:**
+1. **Fase de prueba (días 15-21):** sin cobrar todavía. Pide reservas o señales solo a conocidos si quieres, sin factura.
+2. **Antes del primer cobro real (día 22):** date de **alta en Hacienda** con el modelo 036. 🔍 Pide al gestor el epígrafe del IAE (venta por internet de productos y servicio digital). Quedas exento del pago del IAE.
+3. **Seguridad Social:** dos caminos.
+   - **Prudente:** alta en el RETA con tarifa plana (~89 €/mes). Con 4 kits al mes ya la cubres (margen ≈ 28 € por kit).
+   - **Con riesgo:** no darte de alta mientras la actividad sea esporádica y los ingresos netos queden claramente por debajo del SMI (1.221 €/mes en 14 pagas en 2026 [20]). Si vendes cada semana con una web abierta, la Seguridad Social puede considerarlo habitual y reclamarte las cuotas con recargo.
+4. **IVA e IRPF:** con el alta en Hacienda cobras el 21 % de IVA (ya va incluido en los precios) y presentas cada trimestre el **303** (IVA) y el **130** (IRPF). Aunque no fueras autónomo, esos ingresos se declaran en la renta.
+5. **Facturas:**
+   - A particulares basta con una **factura simplificada** (hasta 400 €): número correlativo, fecha, tu NIF, concepto, total e "IVA incluido".
+   - A gestoras y empresas (las que rellenan "NIF o CIF" en el pedido), **factura completa** con sus datos y el IVA desglosado.
+   - Herramienta: una hoja de cálculo sirve al principio; antes del **1-7-2027** pasa a un programa compatible con **Verifactu** [13].
+6. **Lo que no conviene:**
+   - Las **"cooperativas de facturación"** que te dejan facturar sin alta: la Seguridad Social las ha sancionado y puedes acabar pagando tú.
+   - **Cobrar a nombre de otra persona** o con su NIF.
+   - Bizum de particular para cobros de negocio continuados: 🔍 pregunta a tu banco.
+
+**Datos fiscales en la web:** cuando tengas el alta, pon tu nombre, NIF y dirección en `config.js` (`SELLER_NAME`, `SELLER_TAX_ID`, `SELLER_ADDRESS`): salen en el aviso legal, que la LSSI exige a cualquier web que venda.
+
+Otros puntos:
 - **Solo España** (península y Baleares): IVA español al 21 %; no hace falta OSS.
-- **Canarias, Ceuta y Melilla:** sin IVA español (operación asimilada a exportación); 🔍 cómo facturarlo y justificar el envío.
-- **Verifactu:** obligatorio para autónomos desde el **1-7-2027** [13]. Elige ya un programa compatible.
-- **Bizum en la cuenta de autónomo:** 🔍 que tu banco lo permita para tu actividad.
-- **Renovaciones:** factura con IVA (servicio digital prestado en España).
+- **Canarias, Ceuta y Melilla:** sin IVA español (se trata como exportación); 🔍 cómo facturarlo y justificar el envío.
+- **Renovaciones:** también con factura e IVA (servicio digital prestado en España).
 
 ## Anexo F · Protección de datos: lista de comprobación
 - [ ] `legal.html` revisado (RGPD, LOPDGDD, LSSI).
@@ -550,7 +582,8 @@ Con tarjeta vía PayPal resta además 2,9 % + 0,35 € (unos 1,6 €) [1]. El en
 ## Anexo I · Lista de comprobación antes de lanzar
 - [ ] Nombre comprobado en OEPM y TMview.
 - [ ] `config.js` sin datos de ejemplo (IBAN, Bizum, NIF, email).
-- [ ] Bizum de autónomo confirmado con el banco.
+- [ ] Bizum para cobros de negocio confirmado con el banco.
+- [ ] Alta en Hacienda (modelo 036) hecha y datos fiscales en `config.js` (anexo E).
 - [ ] `SITE_URL` definitivo **antes** de los kits de clientes y dominio con renovación automática.
 - [ ] Email de admin en `admins`; sin sesión no se ven los pedidos.
 - [ ] SMTP propio: el enlace llega a Gmail y a Outlook.
@@ -564,7 +597,7 @@ Con tarjeta vía PayPal resta además 2,9 % + 0,35 € (unos 1,6 €) [1]. El en
 ---
 
 ## Lista de fuentes
-Todas consultadas el 11-10-2026.
+Consultadas el 11-10-2026 (19-21: el 12-10-2026).
 
 1. Tarifas de vendedor de PayPal España: https://www.paypal.com/es/webapps/mpp/merchant-fees · Shopify sobre comisiones de PayPal: https://www.shopify.com/es/blog/comisiones-paypal
 2. Shopify Starter: https://ecommerce-platforms.com/es/articles/shopify-pricing-starter-vs-basic-vs-professional-vs-unlimited-which-plan-is-best-for-you · m8d (precios en España, sep-2026): https://m8d.io/shopify-precios/
@@ -578,3 +611,6 @@ Todas consultadas el 11-10-2026.
 16. Registro de viajeros SES.HOSPEDAJES (2-12-2024): Orain: https://orain.eus/es/actualidad/economia/2024/12/01/este-lunes-entra-en-vigor-nuevo-registro-de-viajeros-pese-al-rechazo-del-sector-turistico/ · Net2Rent (guía 2026): https://net2rent.com/guia-completa-ses-hospedajes/
 17. Anulación parcial del registro único (TS 620/2026): Andersen: https://es.andersen.com/wp-content/uploads/2026/06/Andersen-Alerta-SENTENCIA-DEL-TRIBUNAL-SUPREMO-SOBRE-EL-REGISTRO-UNICO-DE-ARRENDAMIENTOS-DE-CORTA-DURACION.pdf · Net2Rent: https://net2rent.com/registro-unico-de-alquiler-vacacional/
 18. Envíos a Canarias (DUA, IGIC): Sendcloud: https://www.sendcloud.com/es/blog/envios-a-canarias/ · Packlink: https://www.packlink.com/ca-ES/informacion-aduanas-canarias/
+19. Facturar sin ser autónomo (alta en Hacienda obligatoria): Quipu: https://getquipu.com/blog/como-hacer-una-factura-si-no-soy-autonomo/ · Wolters Kluwer: https://www.wolterskluwer.com/es-es/expert-insights/facturar-sin-ser-autonomo
+20. Habitualidad y SMI (STS 941/2025; SMI 2026): Infoautónomos: https://www.infoautonomos.com/?p=2609 · Grupo 2000: https://www.grupo2000.es/merece-la-pena-ser-autonomo-con-bajos-ingresos-en-2025/
+21. Tarifa plana 2026 (~88,64 €/mes con el MEI): Declarando: https://declarando.es/darse-de-alta-como-autonomo/tarifa-plana-bonificaciones · Billin: https://www.billin.net/blog/requisitos-cumplir-tarifa-plana
