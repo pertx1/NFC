@@ -167,6 +167,24 @@
     const { data, error } = await sb.from("orders").select("*").order("created_at", { ascending: false });
     if (error) throw error; return data;
   }
+  // Cambios parciales de un pedido (estado, nº de seguimiento, notas)
+  async function updateOrder(ref, patch) {
+    if (DEMO) { const db = demoDb(); Object.assign(db.orders.find((o) => o.ref === ref), patch); save(db); return; }
+    const { error } = await sb.from("orders").update(patch).eq("ref", ref);
+    if (error) throw error;
+  }
+  // Escucha pedidos nuevos o cambiados. Real: Supabase Realtime. Demo: cambios de localStorage desde otra pestaña.
+  function subscribeOrders(onChange) {
+    if (DEMO) {
+      const h = (e) => { if (e.key === KEY) onChange({ type: "refresh" }); };
+      addEventListener("storage", h);
+      return () => removeEventListener("storage", h);
+    }
+    const ch = sb.channel("orders-feed")
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, (p) => onChange({ type: p.eventType === "INSERT" ? "insert" : "update", order: p.new }))
+      .subscribe();
+    return () => sb.removeChannel(ch);
+  }
   async function setOrderStatus(ref, status) {
     if (DEMO) { const db = demoDb(); db.orders.find((o) => o.ref === ref).status = status; save(db); return; }
     const { error } = await sb.from("orders").update({ status }).eq("ref", ref);
@@ -224,5 +242,5 @@
 
   window.TS = { C, DEMO, $, $$, esc, linkify, money, slugify, rand, baseUrl, tagUrl, qrSvg, wifiString, demoBanner, brand,
     currentUser, login, logout, getGuide, logTap, myProperties, saveProperty, myTags, updateTag, claimKit, tapStats,
-    createOrder, isAdmin, listOrders, setOrderStatus, createKit, listKits, adminProperties, setPaidUntil, resetDemo };
+    createOrder, isAdmin, listOrders, setOrderStatus, updateOrder, subscribeOrders, createKit, listKits, adminProperties, setPaidUntil, resetDemo };
 })();

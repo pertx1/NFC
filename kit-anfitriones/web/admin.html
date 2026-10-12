@@ -59,7 +59,7 @@ async function boot() {
     $('#lf').onsubmit = async (e) => { e.preventDefault(); const r = await TS.login($('#em').value); if (r.demo) boot(); else $('#lm').textContent = 'Revisa tu email y pulsa el enlace.'; };
     return;
   }
-  $('#who').innerHTML = `${esc(u.email)} · <a href="#" id="lo">Salir</a>`;
+  $('#who').innerHTML = `<a href="pedidos.html">App de pedidos</a> · ${esc(u.email)} · <a href="#" id="lo">Salir</a>`;
   $('#lo').onclick = async (e) => { e.preventDefault(); await TS.logout(); location.reload(); };
   render();
 }

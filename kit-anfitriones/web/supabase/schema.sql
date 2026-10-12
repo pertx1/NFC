@@ -119,6 +119,7 @@ create table if not exists public.orders (
   currency text not null default 'EUR',
   payment_method text check (payment_method in ('paypal','transfer','bizum','shopify')),
   status text not null default 'pending' check (status in ('pending','paid','shipped','cancelled')),
+  tracking text check (char_length(tracking) <= 80),   -- nº de seguimiento del envío
   notes text
 );
 alter table public.orders enable row level security;
@@ -128,6 +129,11 @@ drop policy if exists "admin reads orders" on public.orders;
 create policy "admin reads orders" on public.orders for select using (public.am_i_admin());
 drop policy if exists "admin updates orders" on public.orders;
 create policy "admin updates orders" on public.orders for update using (public.am_i_admin());
+
+-- App de pedidos (pedidos.html): avisos en tiempo real. Realtime respeta RLS: solo el admin los recibe.
+do $ begin
+  alter publication supabase_realtime add table public.orders;
+exception when duplicate_object then null; end $;
 
 -- ---------- Funciones públicas ----------
 -- Página del huésped: devuelve la guía de la etiqueta (sin datos del dueño).
